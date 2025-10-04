@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SciGenius (عبقري العلوم)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom Scrollbar Styles */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #112269; /* new brand-light-dark */
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: #00205B; /* new brand-blue */
+            border-radius: 10px;
+            border: 2px solid #112269;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: #003390; /* lighter version of new brand-blue */
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'brand-dark': '#08154A',
+              'brand-light-dark': '#112269',
+              'brand-red': '#ef4444',
+              'brand-blue': '#00205B',
+              'brand-text': '#f8fafc',
+              'brand-text-light': '#94a3b8',
+            },
+            backdropBlur: {
+                'xl': '20px',
+            },
+            boxShadow: {
+              'glow-blue': '0 0 20px 0 rgba(0, 32, 91, 0.5)',
+              'glow-red': '0 0 20px 0 rgba(239, 68, 68, 0.4)',
+            }
+          }
+        }
+      }
+    </script>
+</head>
+<body class="bg-brand-dark text-brand-text">
+    <div id="root"></div>
+
+    <!-- API Key configuration -->
+    <script src="env.js"></script>
+
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://esm.sh/@google/genai?run",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/"
+  }
+}
+</script>
+    
+    <script type="text/babel" data-type="module" src="index.tsx"></script>
+</body>
+</html>
