@@ -2,7 +2,11 @@
 
 import { GoogleGenAI, Modality } from "@google/genai";
 
-const API_KEY = process.env.API_KEY;
+// FIX: Safely access the API key from the global `window.process` object.
+// This prevents a crash if `env.js` fails to load or `process` is undefined
+// in a deployed environment, ensuring the app can still render an error message.
+const API_KEY = window.process?.env?.API_KEY;
+
 
 if (!API_KEY || API_KEY === 'YOUR_API_KEY_HERE') {
   console.error("Gemini API key is not configured. Please add your key to env.js");
