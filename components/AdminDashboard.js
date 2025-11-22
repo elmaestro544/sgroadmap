@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { i18n, SERVICES } from '../constants.js';
-import { UsersIcon, ChartBarIcon, CogIcon, TrendingUpIcon, CurrencyDollarIcon, SearchIcon, GridIcon, PhoneIcon, EnvelopeIcon } from './Shared.js';
+import { UsersIcon, ChartBarIcon, CogIcon, TrendingUpIcon, CurrencyDollarIcon, SearchIcon, GridIcon, PhoneIcon, EnvelopeIcon, UserIcon, TrashIcon } from './Shared.js';
 import * as settingsService from '../services/settingsService.js';
 
 // --- Mock Data ---
@@ -204,8 +204,25 @@ const UsersTab = ({ t, users }) => {
     );
 };
 
-const SettingsTab = ({ siteSettings, handleSettingChange, saveSettings }) => (
-    React.createElement('div', { className: "max-w-2xl mx-auto space-y-8" },
+const SettingsTab = ({ siteSettings, handleSettingChange, setSiteSettings, saveSettings }) => {
+    
+    const updateTeamMember = (index, field, value) => {
+        const updatedMembers = [...(siteSettings.teamMembers || [])];
+        updatedMembers[index] = { ...updatedMembers[index], [field]: value };
+        setSiteSettings({ ...siteSettings, teamMembers: updatedMembers });
+    };
+
+    const addTeamMember = () => {
+        const newMember = { name: 'New Member', role: 'Role', img: 'https://i.pravatar.cc/150' };
+        setSiteSettings({ ...siteSettings, teamMembers: [...(siteSettings.teamMembers || []), newMember] });
+    };
+
+    const removeTeamMember = (index) => {
+        const updatedMembers = siteSettings.teamMembers.filter((_, i) => i !== index);
+        setSiteSettings({ ...siteSettings, teamMembers: updatedMembers });
+    };
+
+    return React.createElement('div', { className: "max-w-3xl mx-auto space-y-8" },
         React.createElement('div', { className: "bg-white dark:bg-card-gradient p-8 rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm" },
             React.createElement('h3', { className: "text-lg font-bold text-slate-900 dark:text-white mb-4" }, "General Settings"),
             React.createElement('div', { className: "space-y-4" },
@@ -245,14 +262,58 @@ const SettingsTab = ({ siteSettings, handleSettingChange, saveSettings }) => (
                         })
                     )
                 ),
-                React.createElement('button', {
-                    onClick: saveSettings,
-                    className: "w-full bg-brand-red hover:bg-red-500 text-white font-bold py-2 rounded-lg transition-colors mt-4"
-                }, "Save Changes")
+                React.createElement('div', null,
+                    React.createElement('label', { className: "block text-sm font-medium text-slate-700 dark:text-brand-text-light mb-1" }, "Chat Avatar URL"),
+                    React.createElement('div', { className: "relative" },
+                        React.createElement(UserIcon, { className: "absolute top-1/2 left-3 -translate-y-1/2 h-5 w-5 text-slate-400" }),
+                        React.createElement('input', { 
+                            type: "text", 
+                            name: "chatAvatarUrl",
+                            value: siteSettings.chatAvatarUrl || '',
+                            onChange: handleSettingChange,
+                            placeholder: "https://...",
+                            className: "w-full pl-10 p-2 bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg focus:ring-2 focus:ring-brand-blue focus:outline-none" 
+                        })
+                    )
+                )
             )
-        )
-    )
-);
+        ),
+        React.createElement('div', { className: "bg-white dark:bg-card-gradient p-8 rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm" },
+            React.createElement('div', { className: "flex justify-between items-center mb-6" },
+                React.createElement('h3', { className: "text-lg font-bold text-slate-900 dark:text-white" }, "Team Members"),
+                React.createElement('button', { onClick: addTeamMember, className: "text-sm bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-brand-red font-semibold py-1.5 px-3 rounded-lg transition-colors" }, "+ Add Member")
+            ),
+            React.createElement('div', { className: "space-y-6" },
+                (siteSettings.teamMembers || []).map((member, index) => 
+                    React.createElement('div', { key: index, className: "flex flex-col md:flex-row gap-4 p-4 bg-slate-50 dark:bg-black/20 rounded-xl border border-slate-100 dark:border-white/5 relative" },
+                        React.createElement('button', { onClick: () => removeTeamMember(index), className: "absolute top-2 right-2 p-1 text-slate-400 hover:text-brand-red transition-colors" }, React.createElement(TrashIcon, {className: "h-4 w-4"})),
+                        React.createElement('div', { className: "flex-shrink-0 w-20 h-20 bg-slate-200 dark:bg-slate-800 rounded-lg overflow-hidden mx-auto md:mx-0" },
+                            member.img ? React.createElement('img', { src: member.img, alt: member.name, className: "w-full h-full object-cover" }) : React.createElement(UserIcon, { className: "w-full h-full p-4 text-slate-400" })
+                        ),
+                        React.createElement('div', { className: "flex-grow grid grid-cols-1 md:grid-cols-2 gap-4" },
+                            React.createElement('div', null,
+                                React.createElement('label', { className: "block text-xs font-medium text-slate-500 mb-1" }, "Name"),
+                                React.createElement('input', { type: "text", value: member.name, onChange: (e) => updateTeamMember(index, 'name', e.target.value), className: "w-full p-2 text-sm bg-white dark:bg-dark-bg border border-slate-200 dark:border-white/10 rounded-lg focus:outline-none focus:border-brand-blue" })
+                            ),
+                            React.createElement('div', null,
+                                React.createElement('label', { className: "block text-xs font-medium text-slate-500 mb-1" }, "Role"),
+                                React.createElement('input', { type: "text", value: member.role, onChange: (e) => updateTeamMember(index, 'role', e.target.value), className: "w-full p-2 text-sm bg-white dark:bg-dark-bg border border-slate-200 dark:border-white/10 rounded-lg focus:outline-none focus:border-brand-blue" })
+                            ),
+                            React.createElement('div', { className: "md:col-span-2" },
+                                React.createElement('label', { className: "block text-xs font-medium text-slate-500 mb-1" }, "Image URL"),
+                                React.createElement('input', { type: "text", value: member.img, onChange: (e) => updateTeamMember(index, 'img', e.target.value), className: "w-full p-2 text-sm bg-white dark:bg-dark-bg border border-slate-200 dark:border-white/10 rounded-lg focus:outline-none focus:border-brand-blue" })
+                            )
+                        )
+                    )
+                )
+            )
+        ),
+        React.createElement('button', {
+            onClick: saveSettings,
+            className: "w-full bg-brand-red hover:bg-red-500 text-white font-bold py-3 rounded-xl transition-colors shadow-lg shadow-brand-red/20"
+        }, "Save All Changes")
+    );
+};
 
 const AdminDashboard = ({ language, theme }) => {
     const t = i18n[language];
@@ -302,7 +363,7 @@ const AdminDashboard = ({ language, theme }) => {
             activeTab === 'overview' && React.createElement(OverviewTab, { t, theme }),
             activeTab === 'services' && React.createElement(ServicesTab, { t, siteSettings, toggleService }),
             activeTab === 'users' && React.createElement(UsersTab, { t, users }),
-            activeTab === 'settings' && React.createElement(SettingsTab, { siteSettings, handleSettingChange, saveSettings })
+            activeTab === 'settings' && React.createElement(SettingsTab, { siteSettings, handleSettingChange, setSiteSettings, saveSettings })
         )
     );
 };

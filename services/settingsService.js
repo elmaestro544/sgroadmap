@@ -7,13 +7,25 @@ const defaultSettings = {
     disabledServices: [], // Array of service IDs
     siteName: 'SciGenius',
     maintenanceMode: false,
-    allowRegistration: true
+    allowRegistration: true,
+    // Updated to a reliable icon URL
+    chatAvatarUrl: 'https://cdn-icons-png.flaticon.com/512/4712/4712027.png',
+    teamMembers: [
+        { name: 'Dr. Arin', role: 'AI Lead', img: 'https://i.pravatar.cc/150?u=1' },
+        { name: 'Noor', role: 'UX Engineer', img: 'https://i.pravatar.cc/150?u=2' },
+        { name: 'Zayn', role: 'Lead Researcher', img: 'https://i.pravatar.cc/150?u=3' },
+    ]
 };
 
 export const getSettings = () => {
     try {
         const stored = localStorage.getItem(SETTINGS_KEY);
-        return stored ? { ...defaultSettings, ...JSON.parse(stored) } : defaultSettings;
+        if (stored) {
+            const parsed = JSON.parse(stored);
+            // Merge with default to ensure new keys (like teamMembers) exist if local storage is old
+            return { ...defaultSettings, ...parsed };
+        }
+        return defaultSettings;
     } catch (e) {
         console.error("Failed to load settings:", e);
         return defaultSettings;

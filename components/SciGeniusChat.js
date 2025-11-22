@@ -4,6 +4,7 @@ import { GoogleGenAI, Modality } from "@google/genai";
 import { i18n } from '../constants.js';
 import * as apiService from '../services/geminiService.js';
 import * as historyService from '../services/historyService.js';
+import * as settingsService from '../services/settingsService.js';
 import { Spinner, SendIcon, AttachIcon, CloseIcon, SpeakerIcon, StopIcon, MicrophoneIcon, HistoryIcon } from './Shared.js';
 import HistoryPanel from './HistoryPanel.js';
 
@@ -132,6 +133,7 @@ const SciGeniusChat = ({ language, currentUser }) => {
   const [speakingMessageIndex, setSpeakingMessageIndex] = useState(null);
   const [isAudioLoading, setIsAudioLoading] = useState(null);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState(settingsService.getSettings().chatAvatarUrl);
 
   // Voice Chat State
   const [isVoiceSessionActive, setIsVoiceSessionActive] = useState(false);
@@ -164,7 +166,13 @@ const SciGeniusChat = ({ language, currentUser }) => {
         text: t.homeDescription,
     }]);
     
+    const handleSettingsChange = () => {
+        setAvatarUrl(settingsService.getSettings().chatAvatarUrl);
+    };
+    window.addEventListener('settingsChanged', handleSettingsChange);
+
     return () => {
+        window.removeEventListener('settingsChanged', handleSettingsChange);
         // Cleanup TTS audio
         if (audioSourceRef.current) {
             audioSourceRef.current.stop();
@@ -462,7 +470,6 @@ const SciGeniusChat = ({ language, currentUser }) => {
   );
 
   const userInitial = currentUser ? currentUser.fullName.charAt(0).toUpperCase() : 'U';
-  const avatarUrl = 'https://images.unsplash.com/photo-1535378917042-10a22c95931a?q=80&w=200&auto=format&fit=crop';
 
   return React.createElement('div', { className: "max-w-4xl mx-auto" },
     React.createElement('div', { className: "text-center mb-6" },

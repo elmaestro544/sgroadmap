@@ -7,10 +7,13 @@ import * as settingsService from '../services/settingsService.js';
 const Home = ({ language, onNavigateToServices }) => {
     const t = i18n[language];
     const [disabledServices, setDisabledServices] = useState(settingsService.getSettings().disabledServices);
+    const [teamMembers, setTeamMembers] = useState(settingsService.getSettings().teamMembers);
 
     useEffect(() => {
         const handleSettingsChange = () => {
-            setDisabledServices(settingsService.getSettings().disabledServices);
+            const settings = settingsService.getSettings();
+            setDisabledServices(settings.disabledServices);
+            setTeamMembers(settings.teamMembers);
         };
         window.addEventListener('settingsChanged', handleSettingsChange);
         return () => window.removeEventListener('settingsChanged', handleSettingsChange);
@@ -167,11 +170,8 @@ const Home = ({ language, onNavigateToServices }) => {
     };
 
     const TeamSection = () => {
-        const team = [
-            { name: 'Dr. Arin', role: language === 'ar' ? 'قائد الذكاء الاصطناعي' : 'AI Lead', img: 'https://i.pravatar.cc/150?u=1' },
-            { name: 'Noor', role: language === 'ar' ? 'مهندسة واجهة المستخدم' : 'UX Engineer', img: 'https://i.pravatar.cc/150?u=2' },
-            { name: 'Zayn', role: language === 'ar' ? 'باحث رئيسي' : 'Lead Researcher', img: 'https://i.pravatar.cc/150?u=3' },
-        ];
+         if (!teamMembers || teamMembers.length === 0) return null;
+
          return React.createElement('section', { className: 'bg-slate-50/80 dark:bg-white/5 backdrop-blur-sm py-20 border-y border-slate-200/50 dark:border-white/5' },
             React.createElement('div', { className: 'container mx-auto px-6' },
                 React.createElement('div', { className: 'text-center max-w-3xl mx-auto mb-12' },
@@ -183,9 +183,9 @@ const Home = ({ language, onNavigateToServices }) => {
                     )
                 ),
                 React.createElement('div', { className: 'grid md:grid-cols-3 gap-8' },
-                    team.map((member, index) => 
+                    teamMembers.map((member, index) => 
                         React.createElement('div', { key: index, className: 'text-center bg-white/60 dark:bg-dark-bg/60 backdrop-blur-md border border-slate-100 dark:border-white/10 p-6 rounded-2xl shadow-lg' },
-                            React.createElement('img', { src: member.img, alt: member.name, className: 'w-32 h-32 rounded-full mx-auto mb-4 border-4 border-brand-red shadow-md' }),
+                            React.createElement('img', { src: member.img, alt: member.name, className: 'w-32 h-32 rounded-full mx-auto mb-4 border-4 border-brand-red shadow-md object-cover' }),
                             React.createElement('h3', { className: 'text-xl font-bold text-slate-900 dark:text-white' }, member.name),
                             React.createElement('p', { className: 'text-slate-500 dark:text-light-gray' }, member.role)
                         )

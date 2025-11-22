@@ -36,7 +36,7 @@ const ModalContent = ({
             React.createElement('input', {
                 type: "text", id: "fullName", name: "fullName", required: true,
                 value: formData.fullName, onChange: handleInputChange,
-                className: "w-full p-2 bg-white dark:bg-input-gradient border border-slate-300 dark:border-white/20 rounded-full focus:ring-2 focus:ring-brand-blue focus:outline-none"
+                className: "w-full p-2 bg-white dark:bg-input-gradient border border-slate-300 dark:border-white/20 rounded-full focus:ring-2 focus:ring-brand-blue focus:outline-none text-slate-900 dark:text-white placeholder-slate-400"
             })
         ),
         React.createElement('div', null,
@@ -44,7 +44,7 @@ const ModalContent = ({
           React.createElement('input', {
             type: "email", id: "email", name: "email", required: true,
             value: formData.email, onChange: handleInputChange,
-            className: "w-full p-2 bg-white dark:bg-input-gradient border border-slate-300 dark:border-white/20 rounded-full focus:ring-2 focus:ring-brand-blue focus:outline-none"
+            className: "w-full p-2 bg-white dark:bg-input-gradient border border-slate-300 dark:border-white/20 rounded-full focus:ring-2 focus:ring-brand-blue focus:outline-none text-slate-900 dark:text-white placeholder-slate-400"
           })
         ),
         React.createElement('div', null,
@@ -52,7 +52,7 @@ const ModalContent = ({
           React.createElement('input', {
             type: "password", id: "password", name: "password", required: true,
             value: formData.password, onChange: handleInputChange,
-            className: "w-full p-2 bg-white dark:bg-input-gradient border border-slate-300 dark:border-white/20 rounded-full focus:ring-2 focus:ring-brand-blue focus:outline-none"
+            className: "w-full p-2 bg-white dark:bg-input-gradient border border-slate-300 dark:border-white/20 rounded-full focus:ring-2 focus:ring-brand-blue focus:outline-none text-slate-900 dark:text-white placeholder-slate-400"
           })
         ),
         !isLoginView && React.createElement('div', null,
@@ -60,7 +60,7 @@ const ModalContent = ({
             React.createElement('input', {
                 type: "password", id: "confirmPassword", name: "confirmPassword", required: true,
                 value: formData.confirmPassword, onChange: handleInputChange,
-                className: "w-full p-2 bg-white dark:bg-input-gradient border border-slate-300 dark:border-white/20 rounded-full focus:ring-2 focus:ring-brand-blue focus:outline-none"
+                className: "w-full p-2 bg-white dark:bg-input-gradient border border-slate-300 dark:border-white/20 rounded-full focus:ring-2 focus:ring-brand-blue focus:outline-none text-slate-900 dark:text-white placeholder-slate-400"
             })
         ),
         !isLoginView && React.createElement('p', { className: "text-xs text-center text-slate-500 dark:text-brand-text-light pt-2" },
@@ -68,13 +68,13 @@ const ModalContent = ({
             React.createElement('button', {
                 type: 'button',
                 onClick: () => { onClose(); setView(AppView.Terms); },
-                className: 'font-semibold text-brand-blue hover:underline focus:outline-none'
+                className: 'font-semibold text-brand-blue dark:text-blue-400 hover:underline focus:outline-none'
             }, t.authRegistrationDisclaimer_terms), ' ',
             t.authRegistrationDisclaimer_p2, ' ',
             React.createElement('button', {
                 type: 'button',
                 onClick: () => { onClose(); setView(AppView.Privacy); },
-                className: 'font-semibold text-brand-blue hover:underline focus:outline-none'
+                className: 'font-semibold text-brand-blue dark:text-blue-400 hover:underline focus:outline-none'
             }, t.authRegistrationDisclaimer_privacy),
             t.authRegistrationDisclaimer_p3
         ),
@@ -104,7 +104,7 @@ const ModalContent = ({
       React.createElement('p', { className: "mt-6 text-center text-sm text-slate-500 dark:text-brand-text-light" },
         isLoginView ? t.dontHaveAccount : t.alreadyHaveAccount,
         ' ',
-        React.createElement('button', { onClick: () => setIsLoginView(!isLoginView), className: "font-medium text-brand-blue hover:underline" },
+        React.createElement('button', { onClick: () => setIsLoginView(!isLoginView), className: "font-medium text-brand-blue dark:text-blue-400 hover:underline" },
           isLoginView ? t.register : t.login
         )
       )
