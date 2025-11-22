@@ -13,6 +13,7 @@ import AdminDashboard from './components/AdminDashboard.js';
 import { UserIcon, Logo, SunIcon, MoonIcon, MenuIcon, CloseIcon, FacebookIcon, LinkedinIcon, TelegramIcon } from './components/Shared.js';
 import { isAnyModelConfigured } from './services/geminiService.js';
 import * as supabaseService from './services/supabaseService.js';
+import * as settingsService from './services/settingsService.js';
 import AuthModal from './components/AuthModal.js';
 
 // Welcome Modal Component
@@ -193,6 +194,16 @@ const MobileMenu = ({ isOpen, onClose, currentView, setView, language, setLangua
 // Footer Component
 const Footer = ({ language, setView }) => {
   const t = i18n[language];
+  const [settings, setSettings] = useState(settingsService.getSettings());
+
+  useEffect(() => {
+      const handleSettingsChange = () => {
+          setSettings(settingsService.getSettings());
+      };
+      window.addEventListener('settingsChanged', handleSettingsChange);
+      return () => window.removeEventListener('settingsChanged', handleSettingsChange);
+  }, []);
+
   const SocialIcon = ({ href, children }) => React.createElement('a', { href, target: "_blank", rel: "noopener noreferrer", className: "w-10 h-10 flex items-center justify-center rounded-full bg-dark-card hover:bg-brand-red text-white transition-colors" }, children);
 
   return React.createElement('footer', { className: "bg-white dark:bg-dark-bg border-t border-slate-200 dark:border-white/10" },
@@ -202,7 +213,7 @@ const Footer = ({ language, setView }) => {
         React.createElement('div', { className: "md:col-span-1" },
           React.createElement('button', { onClick: () => setView(AppView.Home), className: "flex items-center gap-3 mb-4" },
             React.createElement(Logo, null),
-            React.createElement('h1', { className: "text-2xl font-bold text-slate-900 dark:text-brand-text" }, t.title)
+            React.createElement('h1', { className: "text-2xl font-bold text-slate-900 dark:text-brand-text" }, settings.siteName || t.title)
           ),
           React.createElement('p', { className: "text-slate-500 dark:text-light-gray text-sm" }, t.homeDescription)
         ),
@@ -227,11 +238,12 @@ const Footer = ({ language, setView }) => {
         // Column 4: Contact
         React.createElement('div', null,
           React.createElement('h3', { className: "font-bold text-lg text-slate-900 dark:text-white mb-4" }, t.navContact),
-          React.createElement('p', { className: "text-slate-500 dark:text-light-gray" }, t.contactEmailAddress)
+          React.createElement('p', { className: "text-slate-500 dark:text-light-gray" }, settings.contactEmail || t.contactEmailAddress),
+          settings.contactPhone && React.createElement('p', { className: "text-slate-500 dark:text-light-gray mt-2" }, settings.contactPhone)
         )
       ),
       React.createElement('div', { className: "mt-12 border-t border-slate-200 dark:border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center" },
-        React.createElement('p', { className: "text-sm text-slate-500 dark:text-light-gray" }, `© ${new Date().getFullYear()} SciGenius. All Rights Reserved.`),
+        React.createElement('p', { className: "text-sm text-slate-500 dark:text-light-gray" }, `© ${new Date().getFullYear()} ${settings.siteName || 'SciGenius'}. All Rights Reserved.`),
         React.createElement('div', { className: "flex items-center gap-4 mt-4 md:mt-0" },
            React.createElement(SocialIcon, { href: "https://www.facebook.com/people/AI-Roadmap/61580962796113" }, React.createElement(FacebookIcon, null)),
            React.createElement(SocialIcon, { href: "https://www.linkedin.com/company/ai-roadmap-co" }, React.createElement(LinkedinIcon, null)),
