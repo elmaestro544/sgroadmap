@@ -6,30 +6,23 @@ window.process = window.process || {};
 window.process.env = {
   ...window.process.env,
 
-  // --- Configuration Instructions ---
-  // 1. DO NOT commit actual API keys to this file or GitHub.
-  // 2. Use Environment Variables in your hosting provider (e.g., Coolify).
-  //    - Set VITE_API_KEY for Google Gemini
-  //    - Set VITE_OPENAI_API_KEY for OpenAI
-  // 3. This file will automatically read those variables if injected during build.
+  // --- Configuration Instructions for Coolify/Docker ---
+  // 1. Create Environment Variables in Coolify: VITE_API_KEY, VITE_SUPABASE_URL, etc.
+  // 2. Add this to your "Post-Deployment Command" in Coolify:
+  //    sed -i "s|__VITE_API_KEY__|$VITE_API_KEY|g" env.js && \
+  //    sed -i "s|__VITE_SUPABASE_URL__|$VITE_SUPABASE_URL|g" env.js && \
+  //    sed -i "s|__VITE_SUPABASE_ANON_KEY__|$VITE_SUPABASE_ANON_KEY|g" env.js
 
   // --- Google Gemini ---
-  // Expected Env Var: VITE_API_KEY
-  API_KEY: '', 
+  // Primary API Key for Chat, Research, Analysis
+  VITE_API_KEY: '__VITE_API_KEY__', 
 
   // --- OpenAI ---
-  // Expected Env Var: VITE_OPENAI_API_KEY
-  OPENAI_API_KEY: '',
-
-  // --- Perplexity ---
-  // Expected Env Var: VITE_PERPLEXITY_API_KEY
-  PERPLEXITY_API_KEY: '',
+  // Optional: For DALL-E Image Generation
+  VITE_OPENAI_API_KEY: '__VITE_OPENAI_API_KEY__',
 
   // --- Supabase ---
-  // Expected Env Var: VITE_SUPABASE_URL
-  SUPABASE_URL: '',
-  
-  // Expected Env Var: VITE_SUPABASE_ANON_KEY
-  SUPABASE_ANON_KEY: '', 
-  
+  // Required for Authentication & Database
+  SUPABASE_URL: '__VITE_SUPABASE_URL__',
+  SUPABASE_ANON_KEY: '__VITE_SUPABASE_ANON_KEY__', 
 };

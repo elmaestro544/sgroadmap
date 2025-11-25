@@ -8,7 +8,6 @@ const getApiKey = (envVarName) => {
     let keysRaw;
 
     // 1. Try Vite/Modern build injection (import.meta.env)
-    // We check standard variations and VITE_ prefixed variations (required by many bundlers)
     try {
         if (import.meta && import.meta.env) {
             keysRaw = import.meta.env[envVarName] || import.meta.env[`VITE_${envVarName}`];
@@ -25,9 +24,19 @@ const getApiKey = (envVarName) => {
     if (!keysRaw) return undefined;
     
     // Handle multiple keys separated by commas
-    const keys = keysRaw.split(',').map(k => k.trim()).filter(k => k && !k.startsWith('YOUR_'));
+    const keys = keysRaw.split(',').map(k => k.trim()).filter(isValidKey);
+    
     if (keys.length === 0) return undefined;
     return keys[Math.floor(Math.random() * keys.length)];
+};
+
+const isValidKey = (key) => {
+    if (!key) return false;
+    // Filter out default placeholders or empty instructions
+    if (key.startsWith('YOUR_')) return false;
+    if (key.startsWith('__')) return false; // Filter out __GEMINI_API_KEY__ placeholder
+    if (key.includes('PLACEHOLDER')) return false;
+    return true;
 };
 
 const geminiApiKey = getApiKey('API_KEY');
@@ -36,21 +45,24 @@ const otherApiKeys = {
   openai: getApiKey('OPENAI_API_KEY'),
 };
 
-const isValidKey = (key) => !!key && !key.startsWith('YOUR_');
-const isGeminiConfigured = () => isValidKey(geminiApiKey);
+const isGeminiConfigured = () => !!geminiApiKey;
 
 export const isModelConfigured = (modelId) => {
     if (modelId.startsWith('gemini')) {
         return isGeminiConfigured();
     }
     if (modelId.startsWith('openai')) {
-        return isValidKey(otherApiKeys.openai);
+        return !!otherApiKeys.openai;
     }
-    return isValidKey(otherApiKeys[modelId]);
+    return !!otherApiKeys[modelId];
 };
 
 export const isAnyModelConfigured = () => {
-    return isGeminiConfigured() || Object.values(otherApiKeys).some(isValidKey);
+    const configured = isGeminiConfigured() || !!otherApiKeys.openai;
+    if (!configured) {
+        console.warn("SciGenius: No valid API keys found. Please check env.js or your environment variables.");
+    }
+    return configured;
 };
 
 const geminiClient = isGeminiConfigured() ? new GoogleGenAI({ apiKey: geminiApiKey }) : null;
