@@ -2,8 +2,8 @@
 const SETTINGS_KEY = 'scigenius_site_settings';
 
 const defaultSettings = {
-    contactEmail: 'roadmap.casa@gmail.com',
-    contactPhone: '+1 234 567 890',
+    contactEmail: 'info@roadmap.casa',
+    contactPhone: '+966 542398764',
     disabledServices: [], // Array of service IDs
     siteName: 'SciGenius',
     maintenanceMode: false,

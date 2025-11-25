@@ -1,5 +1,6 @@
 
 
+
 import { 
     DataAnalysisIcon, 
     InfographicIcon, 
@@ -201,7 +202,7 @@ export const i18n = {
     contactDescription: "Have a question or want to chat? We're here to help. Reach out to us through one of the channels below.",
     contactEmailTitle: "Email Us",
     contactEmailDescription: "For support, partnerships, or other inquiries.",
-    contactEmailAddress: "roadmap.casa@gmail.com",
+    contactEmailAddress: "info@roadmap.casa",
     contactTelegramTitle: "Join our Telegram",
     contactTelegramDescription: "Ask questions and engage with the community.",
     contactTelegramHandle: "Join Channel",
@@ -550,7 +551,7 @@ export const i18n = {
     contactDescription: "هل لديك سؤال أو تود الدردشة؟ نحن هنا للمساعدة. تواصل معنا عبر إحدى القنوات أدناه.",
     contactEmailTitle: "راسلنا عبر البريد الإلكتروني",
     contactEmailDescription: "للدعم أو الشراكات أو الاستفسارات الأخرى.",
-    contactEmailAddress: "roadmap.casa@gmail.com",
+    contactEmailAddress: "info@roadmap.casa",
     contactTelegramTitle: "انضم إلى تليجرام",
     contactTelegramDescription: "اطرح الأسئلة وتفاعل مع المجتمع.",
     contactTelegramHandle: "انضم للقناة",

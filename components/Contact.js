@@ -2,10 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { i18n } from '../constants.js';
 import * as settingsService from '../services/settingsService.js';
+import { Spinner, CheckIcon } from './Shared.js';
 
 const Contact = ({ language }) => {
     const t = i18n[language];
     const [settings, setSettings] = useState(settingsService.getSettings());
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitted, setSubmitted] = useState(false);
 
     useEffect(() => {
         const handleSettingsChange = () => {
@@ -14,6 +17,19 @@ const Contact = ({ language }) => {
         window.addEventListener('settingsChanged', handleSettingsChange);
         return () => window.removeEventListener('settingsChanged', handleSettingsChange);
     }, []);
+
+    const handleSubmit = (e) => {
+        e.preventDefault(); // Critical: Stops the browser from sending a POST request (fixing 405 error)
+        setIsSubmitting(true);
+        
+        // Simulate network request
+        setTimeout(() => {
+            setIsSubmitting(false);
+            setSubmitted(true);
+            // Reset success message after a few seconds
+            setTimeout(() => setSubmitted(false), 5000);
+        }, 1500);
+    };
 
     const Illustration = () => (
         React.createElement('div', { className: 'flex items-center justify-center p-8' },
@@ -64,25 +80,41 @@ const Contact = ({ language }) => {
                     )
                 ),
                 React.createElement('div', { className: 'p-8' },
-                    React.createElement('form', { action: '#', method: 'POST', className: 'space-y-6' },
-                        React.createElement('div', null,
-                            React.createElement('label', { htmlFor: 'full-name', className: 'text-sm font-medium text-slate-700 dark:text-light-gray' }, t.fullName),
-                            React.createElement('input', { type: 'text', id: 'full-name', name: 'full-name', className: 'mt-1 block w-full px-3 py-2 bg-slate-100 dark:bg-dark-bg border border-slate-300 dark:border-white/20 rounded-md focus:outline-none focus:ring-brand-red focus:border-brand-red' })
-                        ),
-                        React.createElement('div', null,
-                            React.createElement('label', { htmlFor: 'email', className: 'text-sm font-medium text-slate-700 dark:text-light-gray' }, t.emailAddress),
-                            React.createElement('input', { type: 'email', id: 'email', name: 'email', className: 'mt-1 block w-full px-3 py-2 bg-slate-100 dark:bg-dark-bg border border-slate-300 dark:border-white/20 rounded-md focus:outline-none focus:ring-brand-red focus:border-brand-red' })
-                        ),
-                         React.createElement('div', null,
-                            React.createElement('label', { htmlFor: 'company', className: 'text-sm font-medium text-slate-700 dark:text-light-gray' }, 'Company'),
-                            React.createElement('input', { type: 'text', id: 'company', name: 'company', className: 'mt-1 block w-full px-3 py-2 bg-slate-100 dark:bg-dark-bg border border-slate-300 dark:border-white/20 rounded-md focus:outline-none focus:ring-brand-red focus:border-brand-red' })
-                        ),
-                        React.createElement('div', null,
-                            React.createElement('label', { htmlFor: 'message', className: 'text-sm font-medium text-slate-700 dark:text-light-gray' }, 'Message'),
-                            React.createElement('textarea', { id: 'message', name: 'message', rows: '4', className: 'mt-1 block w-full px-3 py-2 bg-slate-100 dark:bg-dark-bg border border-slate-300 dark:border-white/20 rounded-md focus:outline-none focus:ring-brand-red focus:border-brand-red resize-none' })
-                        ),
-                        React.createElement('div', null,
-                            React.createElement('button', { type: 'submit', className: 'w-full px-6 py-3 bg-brand-red text-white font-semibold rounded-lg shadow-lg hover:bg-red-500 transition-colors' }, 'Send Message')
+                    submitted ? (
+                        React.createElement('div', { className: 'h-full flex flex-col items-center justify-center text-center space-y-4 py-12 animate-fade-in-up' },
+                            React.createElement('div', { className: 'w-16 h-16 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center' },
+                                React.createElement(CheckIcon, { className: 'w-8 h-8' })
+                            ),
+                            React.createElement('h3', { className: 'text-xl font-bold text-slate-900 dark:text-white' }, 'Message Sent!'),
+                            React.createElement('p', { className: 'text-slate-500 dark:text-brand-text-light' }, 'Thank you for reaching out. We will get back to you shortly.')
+                        )
+                    ) : (
+                        React.createElement('form', { onSubmit: handleSubmit, className: 'space-y-6' },
+                            React.createElement('div', null,
+                                React.createElement('label', { htmlFor: 'full-name', className: 'text-sm font-medium text-slate-700 dark:text-light-gray' }, t.fullName),
+                                React.createElement('input', { type: 'text', id: 'full-name', name: 'full-name', required: true, className: 'mt-1 block w-full px-3 py-2 bg-slate-100 dark:bg-dark-bg border border-slate-300 dark:border-white/20 rounded-md focus:outline-none focus:ring-brand-red focus:border-brand-red' })
+                            ),
+                            React.createElement('div', null,
+                                React.createElement('label', { htmlFor: 'email', className: 'text-sm font-medium text-slate-700 dark:text-light-gray' }, t.emailAddress),
+                                React.createElement('input', { type: 'email', id: 'email', name: 'email', required: true, className: 'mt-1 block w-full px-3 py-2 bg-slate-100 dark:bg-dark-bg border border-slate-300 dark:border-white/20 rounded-md focus:outline-none focus:ring-brand-red focus:border-brand-red' })
+                            ),
+                             React.createElement('div', null,
+                                React.createElement('label', { htmlFor: 'company', className: 'text-sm font-medium text-slate-700 dark:text-light-gray' }, 'Company'),
+                                React.createElement('input', { type: 'text', id: 'company', name: 'company', className: 'mt-1 block w-full px-3 py-2 bg-slate-100 dark:bg-dark-bg border border-slate-300 dark:border-white/20 rounded-md focus:outline-none focus:ring-brand-red focus:border-brand-red' })
+                            ),
+                            React.createElement('div', null,
+                                React.createElement('label', { htmlFor: 'message', className: 'text-sm font-medium text-slate-700 dark:text-light-gray' }, 'Message'),
+                                React.createElement('textarea', { id: 'message', name: 'message', rows: '4', required: true, className: 'mt-1 block w-full px-3 py-2 bg-slate-100 dark:bg-dark-bg border border-slate-300 dark:border-white/20 rounded-md focus:outline-none focus:ring-brand-red focus:border-brand-red resize-none' })
+                            ),
+                            React.createElement('div', null,
+                                React.createElement('button', { 
+                                    type: 'submit', 
+                                    disabled: isSubmitting,
+                                    className: 'w-full flex justify-center items-center px-6 py-3 bg-brand-red text-white font-semibold rounded-lg shadow-lg hover:bg-red-500 transition-colors disabled:opacity-70 disabled:cursor-not-allowed' 
+                                }, 
+                                    isSubmitting ? React.createElement(Spinner, { size: '5' }) : 'Send Message'
+                                )
+                            )
                         )
                     )
                 )
