@@ -1,14 +1,31 @@
 
-
 import { GoogleGenAI, Modality, Type } from "@google/genai";
 import { LANGUAGES, CONTENT_TYPES, TONES } from "../constants.js";
 
 // --- API Key and Client Management ---
 
 const getApiKey = (envVarName) => {
-    const keysRaw = window.process?.env?.[envVarName];
+    let keysRaw;
+
+    // 1. Try Vite/Modern build injection (import.meta.env)
+    // We check standard variations and VITE_ prefixed variations (required by many bundlers)
+    try {
+        if (import.meta && import.meta.env) {
+            keysRaw = import.meta.env[envVarName] || import.meta.env[`VITE_${envVarName}`];
+        }
+    } catch (e) {
+        // Ignore if import.meta is not supported in the current environment
+    }
+
+    // 2. Fallback to window.process.env (env.js or legacy injection)
+    if (!keysRaw && typeof window !== 'undefined' && window.process && window.process.env) {
+        keysRaw = window.process.env[envVarName] || window.process.env[`VITE_${envVarName}`];
+    }
+
     if (!keysRaw) return undefined;
-    const keys = keysRaw.split(',').map(k => k.trim()).filter(k => k);
+    
+    // Handle multiple keys separated by commas
+    const keys = keysRaw.split(',').map(k => k.trim()).filter(k => k && !k.startsWith('YOUR_'));
     if (keys.length === 0) return undefined;
     return keys[Math.floor(Math.random() * keys.length)];
 };
