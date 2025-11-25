@@ -8,7 +8,7 @@ window.process.env = {
   // --- Google Gemini ---
   // Get your key from: https://aistudio.google.com/app/apikey
   // You can provide multiple keys separated by a comma (e.g., 'KEY1,KEY2') to distribute usage.
-  API_KEY: 'AIzaSyDHP7oZKcq-pr3MMQwwAE8gvsPsJUro5n4',
+  API_KEY: 'AIzaSyDlJEVMudhun7nbZkVHxm5yxbGlabDxRCI',
 
   // --- OpenAI ---
   // Get your key from: https://platform.openai.com/api-keys
