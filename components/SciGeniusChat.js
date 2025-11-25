@@ -317,7 +317,7 @@ const SciGeniusChat = ({ language, currentUser }) => {
 
         analyserRef.current = inputAudioContextRef.current.createAnalyser();
         
-        const ai = new GoogleGenAI({ apiKey: window.process.env.VITE_API_KEY });
+        const ai = new GoogleGenAI({ apiKey: apiService.geminiApiKey });
         sessionPromiseRef.current = ai.live.connect({
             model: 'gemini-2.5-flash-native-audio-preview-09-2025',
             callbacks: {

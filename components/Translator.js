@@ -1,5 +1,4 @@
 
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { GoogleGenAI, Modality } from "@google/genai";
 import { i18n, Language, LANGUAGES, QUICK_PHRASES } from '../constants.js';
@@ -344,7 +343,7 @@ const Translator = ({ language }) => {
         inputAudioContextRef.current = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
         analyserRef.current = inputAudioContextRef.current.createAnalyser();
 
-        const ai = new GoogleGenAI({ apiKey: window.process.env.API_KEY });
+        const ai = new GoogleGenAI({ apiKey: apiService.geminiApiKey });
         sessionPromiseRef.current = ai.live.connect({
             model: 'gemini-2.5-flash-native-audio-preview-09-2025',
             callbacks: {

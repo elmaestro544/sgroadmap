@@ -128,7 +128,14 @@ const Header = ({ currentView, setView, language, setLanguage, isAuthenticated, 
         }, language === Language.EN ? 'العربية' : 'English'),
         isAuthenticated ? (
           React.createElement('div', { className: "relative" },
-            React.createElement('button', { className: "p-2 text-slate-500 dark:text-light-gray rounded-full", onClick: () => setIsUserMenuOpen(!isUserMenuOpen), onBlur: () => setTimeout(() => setIsUserMenuOpen(false), 200) }, React.createElement(UserIcon, null)),
+            React.createElement('button', { 
+                className: "flex items-center gap-2 px-2 py-1 rounded-full hover:bg-slate-100 dark:hover:bg-white/5 transition-colors focus:outline-none", 
+                onClick: () => setIsUserMenuOpen(!isUserMenuOpen), 
+                onBlur: () => setTimeout(() => setIsUserMenuOpen(false), 200) 
+            }, 
+                React.createElement('div', { className: "p-1 text-slate-500 dark:text-light-gray" }, React.createElement(UserIcon, null)),
+                React.createElement('span', { className: "text-sm font-semibold text-slate-700 dark:text-white hidden lg:block max-w-[150px] truncate" }, currentUser.fullName)
+            ),
             isUserMenuOpen && React.createElement('div', { className: "absolute top-full right-0 mt-2 w-48 bg-white dark:bg-dark-card border border-slate-200 dark:border-white/10 rounded-md shadow-lg z-20" },
               currentUser && currentUser.isAdmin && React.createElement('button', { onClick: () => { setView(AppView.Admin); setIsUserMenuOpen(false); }, className: "block w-full text-left px-4 py-2 text-sm text-slate-600 dark:text-light-gray hover:bg-secondary hover:text-white border-b border-slate-100 dark:border-white/5" }, t.navAdmin),
               React.createElement('button', { onClick: () => { onLogout(); setIsUserMenuOpen(false); }, className: "block w-full text-left px-4 py-2 text-sm text-slate-600 dark:text-light-gray hover:bg-secondary hover:text-white rounded-md" }, t.logout)

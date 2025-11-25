@@ -10,7 +10,10 @@ const getApiKey = (envVarName) => {
     // 1. Try Vite/Modern build injection (import.meta.env)
     try {
         if (import.meta && import.meta.env) {
-            keysRaw = import.meta.env[envVarName] || import.meta.env[`VITE_${envVarName}`];
+            // Priority: Exact match, then Try with VITE_ prefix, then Try without VITE_ prefix
+            keysRaw = import.meta.env[envVarName] || 
+                      import.meta.env[`VITE_${envVarName}`] || 
+                      import.meta.env[envVarName.replace('VITE_', '')];
         }
     } catch (e) {
         // Ignore if import.meta is not supported in the current environment
@@ -18,7 +21,9 @@ const getApiKey = (envVarName) => {
 
     // 2. Fallback to window.process.env (env.js or legacy injection)
     if (!keysRaw && typeof window !== 'undefined' && window.process && window.process.env) {
-        keysRaw = window.process.env[envVarName] || window.process.env[`VITE_${envVarName}`];
+        keysRaw = window.process.env[envVarName] || 
+                  window.process.env[`VITE_${envVarName}`] ||
+                  window.process.env[envVarName.replace('VITE_', '')];
     }
 
     if (!keysRaw) return undefined;
@@ -34,15 +39,16 @@ const isValidKey = (key) => {
     if (!key) return false;
     // Filter out default placeholders or empty instructions
     if (key.startsWith('YOUR_')) return false;
-    if (key.startsWith('__')) return false; // Filter out __GEMINI_API_KEY__ placeholder
+    if (key.startsWith('__')) return false; // Filter out placeholders like __VITE_API_KEY__
     if (key.includes('PLACEHOLDER')) return false;
     return true;
 };
 
-const geminiApiKey = getApiKey('API_KEY');
+// Explicitly ask for VITE_API_KEY since that is your variable name
+export const geminiApiKey = getApiKey('VITE_API_KEY');
 
 const otherApiKeys = {
-  openai: getApiKey('OPENAI_API_KEY'),
+  openai: getApiKey('VITE_OPENAI_API_KEY'),
 };
 
 const isGeminiConfigured = () => !!geminiApiKey;
