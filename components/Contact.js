@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { i18n } from '../constants.js';
 import * as settingsService from '../services/settingsService.js';
+import * as supabaseService from '../services/supabaseService.js';
 import { Spinner, CheckIcon } from './Shared.js';
 
 const Contact = ({ language }) => {
@@ -9,6 +10,7 @@ const Contact = ({ language }) => {
     const [settings, setSettings] = useState(settingsService.getSettings());
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
 
     useEffect(() => {
         const handleSettingsChange = () => {
@@ -18,17 +20,39 @@ const Contact = ({ language }) => {
         return () => window.removeEventListener('settingsChanged', handleSettingsChange);
     }, []);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault(); // Critical: Stops the browser from sending a POST request (fixing 405 error)
         setIsSubmitting(true);
+        setErrorMessage('');
+
+        const formData = new FormData(e.target);
+        const data = {
+            fullName: formData.get('full-name'),
+            email: formData.get('email'),
+            company: formData.get('company'),
+            message: formData.get('message')
+        };
         
-        // Simulate network request
-        setTimeout(() => {
-            setIsSubmitting(false);
+        try {
+            if (supabaseService.isSupabaseConfigured()) {
+                const { error } = await supabaseService.submitContactMessage(data);
+                if (error) throw error;
+            } else {
+                // Fallback simulation if Supabase isn't configured yet (prevents breaking demo)
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                console.warn("Supabase not configured. Message not saved to database.");
+            }
+
             setSubmitted(true);
             // Reset success message after a few seconds
             setTimeout(() => setSubmitted(false), 5000);
-        }, 1500);
+            e.target.reset();
+        } catch (error) {
+            console.error("Error sending message:", error);
+            setErrorMessage(t.errorOccurred || "Failed to send message. Please try again.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const Illustration = () => (
@@ -90,6 +114,7 @@ const Contact = ({ language }) => {
                         )
                     ) : (
                         React.createElement('form', { onSubmit: handleSubmit, className: 'space-y-6' },
+                            errorMessage && React.createElement('div', { className: 'p-3 bg-red-100 border border-red-400 text-red-700 rounded' }, errorMessage),
                             React.createElement('div', null,
                                 React.createElement('label', { htmlFor: 'full-name', className: 'text-sm font-medium text-slate-700 dark:text-light-gray' }, t.fullName),
                                 React.createElement('input', { type: 'text', id: 'full-name', name: 'full-name', required: true, className: 'mt-1 block w-full px-3 py-2 bg-slate-100 dark:bg-dark-bg border border-slate-300 dark:border-white/20 rounded-md focus:outline-none focus:ring-brand-red focus:border-brand-red' })

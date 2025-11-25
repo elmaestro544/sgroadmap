@@ -60,3 +60,20 @@ export const onAuthStateChange = (callback) => {
     if (!supabase) return { data: { subscription: { unsubscribe: () => {} } } };
     return supabase.auth.onAuthStateChange(callback);
 };
+
+export const submitContactMessage = async ({ fullName, email, company, message }) => {
+    if (!supabase) throw new Error("Supabase is not configured.");
+
+    const { data, error } = await supabase
+        .from('contact_messages')
+        .insert([
+            {
+                full_name: fullName,
+                email: email,
+                company: company,
+                message: message
+            }
+        ]);
+
+    return { data, error };
+};
