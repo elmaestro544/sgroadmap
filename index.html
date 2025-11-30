@@ -20,6 +20,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Merriweather:wght@400;700&family=Lato:wght@400;700&family=Playfair+Display:wght@400;700&family=Montserrat:wght@400;700&family=Roboto+Slab:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- n8n Chat Style -->
+    <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
+
     <style>
         html {
             scroll-behavior: smooth;
@@ -77,7 +81,7 @@
         }
 
         /* Dark Theme Styles - Minimalist Navy */
-        .dark body {
+        html.dark body {
             background-color: #020617; /* Deep Navy Base */
             background-image: 
                 radial-gradient(circle at 50% 0%, rgba(29, 78, 216, 0.15) 0%, transparent 50%), 
@@ -144,6 +148,88 @@
         }
         .animate-fade-in-up {
             animation: fade-in-up 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+        }
+
+        /* n8n Chat Theme Overrides - Modern Navy/Red */
+        :root {
+            --chat--color-primary: #ef4444; /* Brand Red */
+            --chat--color-secondary: #00205B; /* Brand Blue */
+            --chat--window--width: 400px;
+            --chat--window--height: 600px;
+            --chat--window--border-radius: 1.5rem;
+            --chat--header--height: 64px;
+            --chat--spacing: 1rem;
+            --chat--toggle--size: 64px;
+            
+            /* Toggle Button */
+            --chat--toggle--background: var(--chat--color-primary);
+            --chat--toggle--hover--background: #dc2626;
+            --chat--toggle--active--background: #b91c1c;
+            --chat--toggle--color: #ffffff;
+            
+            /* Light Mode Defaults */
+            --chat--window--background: #ffffff;
+            --chat--header--background: var(--chat--color-secondary);
+            --chat--header--color: #ffffff;
+            
+            /* Light Mode: High Contrast */
+            --chat--message--bot--background: #f3f4f6; /* Light gray */
+            --chat--message--bot--color: #1f2937; /* Very dark gray text */
+            
+            --chat--message--user--background: var(--chat--color-secondary);
+            --chat--message--user--color: #ffffff;
+            
+            --chat--input--background: #ffffff;
+            --chat--input--color: #0f172a;
+            --chat--input--border-color: #e2e8f0;
+            --chat--input--placeholder-color: #94a3b8;
+            --chat--input--button--color: var(--chat--color-primary);
+            
+            /* Font Family Override */
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* Dark Mode Chat Overrides */
+        html.dark {
+            /* Background matches App Navy */
+            --chat--window--background: #020617; 
+            --chat--header--background: #0f172a; /* Slightly lighter navy for header */
+            --chat--header--color: #f8fafc;
+            
+            /* Bot Message: Slate background, White text */
+            --chat--message--bot--background: #1e293b;
+            --chat--message--bot--color: #ffffff; /* FORCE WHITE TEXT */
+            
+            /* User Message: Red background, White text (High Contrast) */
+            --chat--message--user--background: #ef4444;
+            --chat--message--user--color: #ffffff;
+            
+            /* Input Area */
+            --chat--input--background: #020617;
+            --chat--input--color: #ffffff;
+            --chat--input--border-color: #334155;
+            --chat--input--placeholder-color: #94a3b8;
+            --chat--input--button--color: #ef4444;
+        }
+
+        /* Global Chat Customizations to remove border and style title */
+        .chat-window, .n8n-chat-window {
+            border: none !important;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3) !important;
+        }
+        
+        .chat-header-title, .n8n-chat-header-title {
+            font-size: 1rem !important; /* Match website header menu (text-base) */
+            font-weight: 600 !important;
+        }
+
+        /* Force white text in chat input during dark mode */
+        html.dark .n8n-chat-window textarea,
+        html.dark .chat-window textarea,
+        html.dark .n8n-chat-window input,
+        html.dark .chat-window input {
+            color: #ffffff !important;
+            caret-color: #ffffff !important;
         }
     </style>
     <script>
@@ -224,6 +310,26 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/util.min.js"></script>
     <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.min.js"></script>
+
+    <!-- n8n Chatbot Initialization -->
+    <script type="module">
+        import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
+
+        createChat({
+            webhookUrl: 'https://n8n.roadmap.casa/webhook/4ca36ee3-8e89-4277-ada7-82560d2be2e8/chat',
+            initialMessages: [
+                'Hi there! 👋',
+                'How can I help you today?'
+            ],
+            i18n: {
+                en: {
+                    title: 'SciGenius Support',
+                    subtitle: 'Ask us anything',
+                    inputPlaceholder: 'Type your message...',
+                },
+            },
+        });
+    </script>
 
     <script type="importmap">
 {
