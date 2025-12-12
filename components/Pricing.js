@@ -1,124 +1,157 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { i18n, PRICING_PLANS, AppView } from '../constants.js';
-import { CheckIcon } from './Shared.js';
-import PaymentModal from './PaymentModal.js';
+import { CloseIcon, CreditCardIcon, Spinner, CheckIcon } from './Shared.js';
 
-const PlanCard = ({ plan, billingCycle, onChoosePlan, language, t }) => {
-    const currentPricing = plan[billingCycle] || plan.monthly;
-    const isPremiumMonthlyWithDiscount = plan.id === 'premium' && billingCycle === 'monthly' && currentPricing.original_price;
+// --- PaymentModal Component ---
+const PaymentModal = ({ isOpen, onClose, language, plan }) => {
+    const t = i18n[language];
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [isSuccess, setIsSuccess] = useState(false);
 
-    const name = plan.name[language];
-    const price = currentPricing.price[language];
-    const period = currentPricing.period[language];
-    const buttonText = t[plan.buttonTextKey];
+    useEffect(() => {
+        if (isOpen) {
+            setIsProcessing(false);
+            setIsSuccess(false);
+        }
+    }, [isOpen]);
+
+    const handlePayment = (e) => {
+        e.preventDefault();
+        setIsProcessing(true);
+        setTimeout(() => {
+            setIsProcessing(false);
+            setIsSuccess(true);
+        }, 2000);
+    };
+
+    if (!isOpen) return null;
 
     return React.createElement('div', {
-        className: `relative bg-white dark:bg-card-gradient p-8 rounded-2xl border ${plan.isPopular ? 'border-brand-red' : 'border-slate-200 dark:border-white/10'} shadow-lg dark:shadow-card transition-all transform hover:scale-105 flex flex-col`
+        className: "fixed inset-0 bg-slate-900/60 dark:bg-black/80 z-[150] flex justify-center items-center backdrop-blur-sm p-4",
+        onClick: onClose
     },
-        plan.isPopular && React.createElement('div', { className: "absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2 bg-brand-red text-white text-xs font-bold px-3 py-1 rounded-full" }, t.mostPopular),
-        
-        isPremiumMonthlyWithDiscount && React.createElement('div', { className: "absolute top-4 right-4 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-0.5 rounded" }, t.limitedTimeOffer),
-
-        React.createElement('h3', { className: "text-2xl font-bold text-slate-900 dark:text-brand-text text-center" }, name),
-        React.createElement('div', { className: "text-center my-4 min-h-[80px] flex flex-col justify-center" },
-            isPremiumMonthlyWithDiscount && React.createElement('p', {className: 'text-sm text-slate-500 dark:text-brand-text-light'}, 
-                `${t.originally} `,
-                React.createElement('span', {className: 'line-through'}, currentPricing.original_price[language])
-            ),
-            React.createElement('p', null,
-                React.createElement('span', { className: "text-5xl font-extrabold text-slate-900 dark:text-white" }, price),
-                React.createElement('span', { className: "text-slate-500 dark:text-brand-text-light" }, period)
-            )
-        ),
-        React.createElement('ul', { className: "space-y-3 my-8 flex-grow" },
-            plan.features.map((feature, index) => (
-                React.createElement('li', { key: index, className: "flex items-center gap-3" },
-                    React.createElement(CheckIcon, { className: "w-5 h-5 text-green-400 flex-shrink-0" }),
-                    React.createElement('span', { className: "text-slate-600 dark:text-brand-text-light" }, feature[language])
+        React.createElement('div', {
+            className: "bg-white dark:bg-card-gradient p-8 rounded-2xl shadow-2xl w-full max-w-md relative border border-slate-200 dark:border-white/10 transform transition-all animate-fade-in-up",
+            onClick: e => e.stopPropagation()
+        },
+            isSuccess ? (
+                React.createElement('div', { className: 'text-center' },
+                    React.createElement('div', { className: 'w-16 h-16 bg-green-500/10 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4' },
+                        React.createElement(CheckIcon, { className: 'w-8 h-8' })
+                    ),
+                    React.createElement('h2', { className: "text-2xl font-bold text-slate-900 dark:text-brand-text mb-2" }, t.paymentSuccess),
+                    React.createElement('p', { className: "text-slate-500 dark:text-brand-text-light mb-6" }, t.welcomeAboard),
+                    React.createElement('button', { onClick: onClose, className: "w-full bg-button-gradient text-white font-bold py-2.5 px-4 rounded-full transition-opacity hover:opacity-90" }, 'Done')
                 )
-            ))
-        ),
-        React.createElement('button', {
-            onClick: () => onChoosePlan(plan),
-            className: `w-full font-bold py-3 px-4 rounded-full transition-colors ${plan.isPopular ? 'bg-brand-red hover:bg-red-500 text-white' : 'bg-slate-200 hover:bg-slate-300 text-slate-800 dark:bg-brand-blue dark:hover:bg-brand-light-dark dark:text-brand-text'}`
-        }, buttonText)
+            ) : (
+                React.createElement(React.Fragment, null,
+                    React.createElement('button', { onClick: onClose, className: "absolute top-4 right-4 text-slate-500 dark:text-brand-text-light hover:text-slate-900 dark:hover:text-white transition-colors" },
+                        React.createElement(CloseIcon, null)
+                    ),
+                    React.createElement('h2', { className: "text-2xl font-bold text-slate-900 dark:text-brand-text mb-2" }, t.paymentTitle),
+                    React.createElement('p', { className: "text-slate-500 dark:text-brand-text-light mb-6" }, `${t.paymentFor} ${plan.name[language]} plan.`),
+                    React.createElement('form', { onSubmit: handlePayment, className: 'space-y-4' },
+                        React.createElement('div', { className: 'relative' },
+                            React.createElement('input', { type: 'text', placeholder: t.cardNumber, className: 'w-full p-3 pl-12 bg-slate-100 dark:bg-input-gradient border border-slate-300 dark:border-white/20 rounded-full focus:ring-2 focus:ring-brand-purple focus:outline-none' }),
+                            React.createElement(CreditCardIcon, { className: 'absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400' })
+                        ),
+                        React.createElement('div', { className: 'grid grid-cols-2 gap-4' },
+                            React.createElement('input', { type: 'text', placeholder: t.expiryDate, className: 'w-full p-3 bg-slate-100 dark:bg-input-gradient border border-slate-300 dark:border-white/20 rounded-full focus:ring-2 focus:ring-brand-purple focus:outline-none' }),
+                            React.createElement('input', { type: 'text', placeholder: t.cvc, className: 'w-full p-3 bg-slate-100 dark:bg-input-gradient border border-slate-300 dark:border-white/20 rounded-full focus:ring-2 focus:ring-brand-purple focus:outline-none' })
+                        ),
+                        React.createElement('button', {
+                            type: 'submit',
+                            disabled: isProcessing,
+                            className: "w-full flex items-center justify-center bg-button-gradient text-white font-bold py-3 px-4 rounded-full transition-opacity hover:opacity-90 disabled:opacity-50"
+                        },
+                            isProcessing && React.createElement(Spinner, { size: '5' }),
+                            React.createElement('span', { className: isProcessing ? 'ml-2' : '' }, isProcessing ? t.processingPayment : t.payNow)
+                        )
+                    )
+                )
+            )
+        )
     );
 };
 
-
+// --- Pricing Component ---
 const Pricing = ({ language, setView, currentUser, onLoginClick }) => {
     const t = i18n[language];
-    const [billingCycle, setBillingCycle] = useState('monthly'); // 'monthly' or 'yearly'
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [billingCycle, setBillingCycle] = useState('monthly');
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
     const [selectedPlan, setSelectedPlan] = useState(null);
 
     const handleChoosePlan = (plan) => {
-        // If user is not logged in, show the login/register modal.
-        if (!currentUser) {
+        if (plan.id === 'free' || plan.buttonTextKey === 'getStarted') {
             onLoginClick();
             return;
         }
-
-        // If the user is logged in:
-        if (plan.id === 'free') {
-            // For the Free plan, navigate to the Home page.
-            setView(AppView.Home);
+        if (plan.id === 'enterprise') {
+            setView(AppView.Contact);
             return;
         }
-        
-        // For paid plans, open the payment modal.
-        const currentPricing = plan[billingCycle] || plan.monthly;
-        const planForModal = {
-            id: `${plan.id}_${billingCycle}`,
-            name: (lang) => plan.name[lang],
-            name_ar: plan.name['ar'],
-            price: (lang) => currentPricing.price[lang],
-            price_ar: currentPricing.price['ar'],
-            period: (lang) => currentPricing.period[lang],
-            period_ar: currentPricing.period['ar'],
-        };
-
-        setSelectedPlan(planForModal);
-        setIsModalOpen(true);
+        if (!currentUser) {
+            onLoginClick();
+        } else {
+            setSelectedPlan(plan);
+            setIsPaymentModalOpen(true);
+        }
     };
 
-    return React.createElement(React.Fragment, null,
-        React.createElement('div', { className: "max-w-5xl mx-auto py-8" },
-            React.createElement('div', { className: "text-center mb-10" },
-                React.createElement('h2', { className: "text-3xl md:text-4xl font-bold text-slate-900 dark:text-brand-text" }, t.pricingTitle),
-                React.createElement('p', { className: "text-slate-500 dark:text-brand-text-light mt-2 max-w-2xl mx-auto" }, t.pricingDescription)
-            ),
+    const PlanCard = ({ plan }) => {
+        const isYearly = billingCycle === 'yearly';
+        const priceDetails = isYearly && plan.yearly ? plan.yearly : plan.monthly;
+        const isPopular = plan.isPopular;
+        const isCustom = priceDetails.price.en === 'Custom';
 
-            React.createElement('div', { className: "flex justify-center items-center gap-4 mb-10" },
-                React.createElement('span', { className: `font-semibold ${billingCycle === 'monthly' ? 'text-slate-900 dark:text-brand-text' : 'text-slate-500 dark:text-brand-text-light'}` }, t.monthly),
-                React.createElement('div', {
-                    onClick: () => setBillingCycle(billingCycle === 'monthly' ? 'yearly' : 'monthly'),
-                    className: "w-14 h-8 flex items-center bg-slate-200 dark:bg-brand-light-dark rounded-full p-1 cursor-pointer"
-                },
-                    React.createElement('div', { className: `bg-brand-red w-6 h-6 rounded-full shadow-md transform transition-transform ${billingCycle === 'yearly' ? (language === 'ar' ? '-translate-x-6' : 'translate-x-6') : ''}` })
-                ),
-                React.createElement('span', { className: `font-semibold ${billingCycle === 'yearly' ? 'text-slate-900 dark:text-brand-text' : 'text-slate-500 dark:text-brand-text-light'}` }, t.yearly),
-                React.createElement('span', { className: "bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded-full" }, t.save20)
-            ),
+        const cardClasses = `relative border rounded-2xl p-6 flex flex-col transition-all duration-300 ${
+            isPopular 
+                ? 'bg-white dark:bg-dark-card border-brand-purple shadow-2xl shadow-glow-purple' 
+                : isCustom
+                    ? 'bg-white dark:bg-dark-card border-brand-pink shadow-2xl shadow-glow-pink'
+                    : 'bg-slate-50 dark:bg-card-gradient border-slate-200 dark:border-white/10'
+        }`;
+        
+        const buttonClasses = `w-full font-bold py-3 px-4 rounded-lg transition-opacity hover:opacity-90 ${
+            isPopular || isCustom
+                ? 'bg-button-gradient text-white' 
+                : 'bg-slate-200 hover:bg-slate-300 dark:bg-dark-bg dark:text-white dark:hover:bg-dark-bg/70'
+        }`;
 
-            React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto" },
-                PRICING_PLANS.map(plan => 
-                    React.createElement(PlanCard, {
-                        key: plan.id,
-                        plan: plan,
-                        billingCycle: billingCycle,
-                        onChoosePlan: handleChoosePlan,
-                        language: language,
-                        t: t
-                    })
-                )
-            )
+        return React.createElement('div', { className: cardClasses },
+            isPopular && React.createElement('div', { className: 'absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2 bg-brand-purple text-white text-xs font-bold px-3 py-1 rounded-full' }, t.mostPopular),
+            React.createElement('h3', { className: 'text-2xl font-bold text-slate-900 dark:text-brand-text text-center' }, plan.name[language]),
+            React.createElement('div', { className: 'my-6 text-center' },
+                React.createElement('span', { className: 'text-5xl font-extrabold text-slate-900 dark:text-white' }, priceDetails.price[language]),
+                priceDetails.period[language] && React.createElement('span', { className: 'text-slate-500 dark:text-light-gray' }, priceDetails.period[language])
+            ),
+            React.createElement('ul', { className: 'space-y-3 mb-8 flex-grow' },
+                plan.features.map((feature, index) => React.createElement('li', { key: index, className: 'flex items-center gap-3' },
+                    React.createElement('div', { className: 'w-5 h-5 flex-shrink-0 flex items-center justify-center rounded-full bg-green-500/10 text-green-500' }, React.createElement(CheckIcon, { className: 'w-3 h-3' })),
+                    React.createElement('span', { className: 'text-slate-600 dark:text-brand-text-light' }, feature[language])
+                ))
+            ),
+            React.createElement('button', {
+                onClick: () => handleChoosePlan(plan),
+                className: buttonClasses
+            }, t[plan.buttonTextKey])
+        );
+    };
+
+    return React.createElement('div', { className: "container mx-auto px-6 py-16" },
+        React.createElement('div', { className: "text-center max-w-2xl mx-auto mb-12" },
+            React.createElement('h2', { className: "text-4xl font-bold text-slate-900 dark:text-white" }, t.pricingTitle),
+            React.createElement('p', { className: "mt-3 text-lg text-slate-500 dark:text-light-gray" }, t.pricingDescription)
+        ),
+        React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto' },
+            PRICING_PLANS.map(plan => React.createElement(PlanCard, { key: plan.id, plan: plan }))
         ),
         React.createElement(PaymentModal, {
-            isOpen: isModalOpen,
-            onClose: () => setIsModalOpen(false),
-            plan: selectedPlan,
-            language: language
+            isOpen: isPaymentModalOpen,
+            onClose: () => setIsPaymentModalOpen(false),
+            language: language,
+            plan: selectedPlan
         })
     );
 };

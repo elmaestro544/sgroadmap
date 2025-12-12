@@ -1,217 +1,486 @@
 
-import React, { useRef, useState, useEffect } from 'react';
-import { i18n, SERVICES } from '../constants.js';
-import { ArrowLeftIcon } from './Shared.js';
-import * as settingsService from '../services/settingsService.js';
+import React, { useState, useEffect } from 'react';
+import { i18n, AppView } from '../constants.js';
+import { PlanningIcon, RiskIcon, BudgetIcon, ScheduleIcon, CheckIcon, CloseIcon } from './Shared.js';
 
-const Home = ({ language, onNavigateToServices }) => {
-    const t = i18n[language];
-    const [disabledServices, setDisabledServices] = useState(settingsService.getSettings().disabledServices);
+// --- Feature Modal Component (New) ---
+const FeatureModal = ({ feature, onClose, language }) => {
+    if (!feature) return null;
 
-    useEffect(() => {
-        const handleSettingsChange = () => {
-            const settings = settingsService.getSettings();
-            setDisabledServices(settings.disabledServices);
-        };
-        window.addEventListener('settingsChanged', handleSettingsChange);
-        return () => window.removeEventListener('settingsChanged', handleSettingsChange);
-    }, []);
+    const Icon = feature.icon;
 
-    const HeroSection = () => (
-        React.createElement('section', { className: 'container mx-auto px-6 py-16 md:py-24' },
-            React.createElement('div', { className: 'grid md:grid-cols-2 gap-12 items-center' },
-                React.createElement('div', { className: `text-center md:text-left ${language === 'ar' ? 'md:text-right' : ''}` },
-                    React.createElement('h1', { className: 'text-4xl md:text-6xl font-bold text-slate-900 dark:text-white leading-tight' }, 
-                        language === 'ar' ? 'عزّز فكرك مع عبقري العلوم' : 'Amplify Your Intellect with SciGenius'
-                    ),
-                    React.createElement('p', { className: 'mt-6 text-lg text-slate-500 dark:text-light-gray max-w-xl mx-auto md:mx-0' }, 
-                        language === 'ar' ? 'منصتك الشاملة للبحث والإبداع والتصميم. حوّل أفكارك إلى نتائج مذهلة بمساعدة الذكاء الاصطناعي.' : 'Your all-in-one AI platform for research, creativity, and design. Transform your ideas into powerful results.'
-                    ),
-                    React.createElement('div', { className: `mt-8 flex justify-center md:justify-start gap-4 ${language === 'ar' ? 'md:justify-end' : ''}` },
-                        React.createElement('button', {
-                            onClick: onNavigateToServices,
-                            className: 'px-8 py-3 bg-brand-red text-white font-semibold rounded-lg shadow-lg hover:bg-red-500 transition-colors'
-                        }, language === 'ar' ? 'ابدأ الآن' : 'Get Started'),
-                        React.createElement('button', {
-                            className: 'px-8 py-3 bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-white/10 dark:hover:bg-white/20 dark:text-white font-semibold rounded-lg transition-colors backdrop-blur-sm'
-                        }, language === 'ar' ? 'شاهد الفيديو' : 'Watch Video')
+    return React.createElement('div', {
+        className: "fixed inset-0 bg-black/80 z-[200] flex justify-center items-center backdrop-blur-sm p-4 animate-fade-in-up",
+        onClick: onClose,
+    },
+        React.createElement('div', {
+            className: "bg-dark-card rounded-xl shadow-2xl w-full max-w-2xl border border-dark-border transform transition-all glow-border overflow-hidden",
+            onClick: e => e.stopPropagation(),
+        },
+            React.createElement('div', { className: 'relative' },
+                React.createElement('img', {
+                    src: feature.image,
+                    alt: feature.title,
+                    className: 'w-full h-72 object-cover'
+                }),
+                React.createElement('div', { className: 'absolute inset-0 bg-gradient-to-t from-dark-card via-dark-card/60 to-transparent' }),
+                React.createElement('button', {
+                    onClick: onClose,
+                    className: "absolute top-4 right-4 text-white bg-black/40 hover:bg-black/70 p-1.5 rounded-full transition-colors"
+                }, React.createElement(CloseIcon, null))
+            ),
+            React.createElement('div', { className: 'p-8 pt-0 text-center relative' },
+                 React.createElement('div', { className: 'flex justify-center mb-4' },
+                     React.createElement('div', { className: 'p-4 bg-dark-card rounded-full -mt-12 border-2 border-dark-border shadow-lg' },
+                        React.createElement(Icon, { className: 'h-12 w-12 text-brand-purple-light' })
                     )
                 ),
-                React.createElement('div', { className: 'relative h-80 md:h-full flex items-center justify-center' },
-                    // Abstract floating shapes
-                    React.createElement('div', { className: 'absolute w-64 h-64 bg-secondary rounded-full opacity-20 dark:opacity-30 filter blur-2xl animate-spin', style: { animationDuration: '20s' } }),
-                    React.createElement('div', { className: 'absolute top-0 right-10 w-48 h-48 bg-brand-blue rounded-full opacity-20 dark:opacity-30 filter blur-2xl animate-spin', style: { animationDuration: '25s', animationDirection: 'reverse' } }),
-                    React.createElement('div', { className: 'absolute bottom-0 left-10 w-40 h-40 bg-green-500 rounded-full opacity-20 dark:opacity-30 filter blur-2xl animate-spin', style: { animationDuration: '18s' } }),
-                    // Central floating element
-                    React.createElement('div', { className: 'relative animate-float' },
-                        React.createElement('div', { className: 'w-72 h-72 bg-white/40 dark:bg-white/5 backdrop-blur-md border border-white/20 rounded-2xl transform rotate-45' }),
-                        React.createElement('div', { className: 'absolute inset-4 bg-white/60 dark:bg-dark-card/60 backdrop-blur-md border border-white/20 rounded-lg transform -rotate-45 flex items-center justify-center shadow-xl' },
-                            React.createElement('div', { className: 'text-center' },
-                                React.createElement('h3', { className: 'text-2xl font-bold text-slate-800 dark:text-white' }, 'SciGenius'),
-                                React.createElement('p', { className: 'text-sm text-slate-500 dark:text-light-gray' }, 'AI-Powered Assistant')
+                React.createElement('h2', { className: "text-2xl font-bold text-brand-text" }, feature.title),
+                React.createElement('p', { className: "text-brand-text-light mt-2 mb-6" }, feature.desc),
+                React.createElement('button', {
+                    onClick: onClose,
+                    className: "w-full bg-button-gradient text-white font-bold py-3 px-4 rounded-lg transition-opacity hover:opacity-90 shadow-lg shadow-brand-purple/20"
+                }, "Explore Feature")
+            )
+        )
+    );
+};
+
+// --- Animated Cityscape Component (Unchanged) ---
+const AnimatedCityscape = () => {
+    const [animationKey, setAnimationKey] = useState(0);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setAnimationKey(prevKey => prevKey + 1);
+        }, 60000); // Re-trigger animation every 1 minute
+
+        return () => clearInterval(interval); // Cleanup on unmount
+    }, []);
+    
+    const buildings = [
+        { x: 0, y: 150, width: 60, height: 150, delay: '0.2s', color: 'url(#grad1)' },
+        { x: 70, y: 100, width: 80, height: 200, delay: '0s', color: 'url(#grad2)' },
+        { x: 160, y: 50, width: 70, height: 250, delay: '0.4s', color: 'url(#grad1)' },
+        { x: 240, y: 120, width: 50, height: 180, delay: '0.6s', color: 'url(#grad3)' },
+        { x: 450, y: 160, width: 70, height: 140, delay: '0.5s', color: 'url(#grad3)' },
+        { x: 530, y: 30, width: 60, height: 270, delay: '0.3s', color: 'url(#grad2)' },
+        { x: 600, y: 180, width: 50, height: 120, delay: '0.7s', color: 'url(#grad1)' },
+        { x: 660, y: 130, width: 60, height: 170, delay: '0.9s', color: 'url(#grad3)' },
+    ];
+    
+    const iconicTower = {
+        x: 310,
+        y: 0,
+        width: 90,
+        height: 300,
+        delay: '0.25s',
+        color: 'url(#floorPattern)'
+    };
+
+    const cranes = [
+        { x: 200, y: 50, armLength: 80, delay: '2s' },
+        { x: 480, y: 160, armLength: 60, delay: '1s' }
+    ];
+
+    const BuildingWithWindows = ({ b }) => {
+        const windowWidth = 6;
+        const windowHeight = 8;
+        const gap = 4;
+        
+        const windows = [];
+        const numCols = Math.floor((b.width - gap) / (windowWidth + gap));
+        const numRows = Math.floor((b.height - gap) / (windowHeight + gap));
+
+        for (let row = 0; row < numRows; row++) {
+            for (let col = 0; col < numCols; col++) {
+                const x = b.x + gap + col * (windowWidth + gap) + (b.width - (numCols * (windowWidth + gap) - gap)) / 2;
+                const y = b.y + gap + row * (windowHeight + gap);
+                const isBlinking = Math.random() > 0.85;
+                windows.push({ x, y, isBlinking });
+            }
+        }
+
+        return React.createElement('g', {
+            className: 'building',
+            style: { animationDelay: b.delay }
+        },
+            React.createElement('rect', {
+                x: b.x, y: b.y,
+                width: b.width, height: b.height,
+                fill: b.color,
+            }),
+            windows.map((w, i) =>
+                React.createElement('rect', {
+                    key: i,
+                    x: w.x, y: w.y,
+                    width: windowWidth, height: windowHeight,
+                    fill: w.isBlinking ? 'rgba(250, 204, 21, 0.6)' : 'rgba(14, 165, 233, 0.15)',
+                    className: w.isBlinking ? 'blinking-light' : ''
+                })
+            )
+        );
+    };
+
+    const IconicTower = ({ tower }) => {
+        const { x, y, width, height, color, delay } = tower;
+
+        const midX = x + width / 2;
+        const bottomY = y + height;
+        const gap = 4;
+
+        // dLeft traces the left tower based on wireframe
+        const dLeft = `
+            M ${midX - gap}, ${y + 2}
+            L ${midX - gap}, ${bottomY - 40}
+            C ${midX - gap}, ${bottomY - 15}, ${x + 30}, ${bottomY}, ${x + 15}, ${bottomY}
+            L ${x}, ${bottomY}
+            C ${x - 5}, ${bottomY - 120}, ${x + 15}, ${y + 80}, ${midX - gap - 10}, ${y}
+            Z
+        `;
+
+        // dRight traces the right tower based on wireframe
+        const dRight = `
+            M ${midX + gap}, ${y + 2}
+            L ${midX + gap}, ${bottomY - 40}
+            C ${midX + gap}, ${bottomY - 15}, ${x + width - 30}, ${bottomY}, ${x + width - 15}, ${bottomY}
+            L ${x + width}, ${bottomY}
+            C ${x + width + 5}, ${bottomY - 120}, ${x + width - 15}, ${y + 80}, ${midX + gap + 10}, ${y}
+            Z
+        `;
+
+
+        return React.createElement('g', {
+            className: 'building',
+            style: { animationDelay: delay }
+        },
+            React.createElement('path', {
+                d: dLeft,
+                fill: color,
+            }),
+            React.createElement('path', {
+                d: dRight,
+                fill: color,
+            }),
+             // Add the grid-like entrance at the base
+            React.createElement('path', {
+                d: `M ${midX - gap} ${bottomY - 40} L ${midX + gap} ${bottomY - 40} L ${midX + gap} ${bottomY} L ${midX - gap} ${bottomY} Z`,
+                fill: 'rgba(107, 114, 128, 0.15)'
+            }),
+             React.createElement('path', {
+                d: `M ${midX} ${bottomY - 40} L ${midX} ${bottomY}`,
+                stroke: '#6b7280',
+                strokeWidth: '0.5'
+            }),
+             React.createElement('path', {
+                d: `M ${midX - gap} ${bottomY - 20} L ${midX + gap} ${bottomY - 20}`,
+                stroke: '#6b7280',
+                strokeWidth: '0.5'
+            })
+        );
+    };
+
+    return React.createElement('svg', {
+        width: "100%",
+        height: "100%",
+        viewBox: "0 0 720 300",
+        preserveAspectRatio: "xMidYMax meet",
+        className: 'opacity-50'
+    },
+        React.createElement('defs', null,
+            React.createElement('linearGradient', { id: "grad1", x1: "0%", y1: "0%", x2: "0%", y2: "100%" },
+                React.createElement('stop', { offset: "0%", style: { stopColor: '#5EEAD4', stopOpacity: 0.8 } }),
+                React.createElement('stop', { offset: "100%", style: { stopColor: '#2DD4BF', stopOpacity: 0.4 } })
+            ),
+            React.createElement('linearGradient', { id: "grad2", x1: "0%", y1: "0%", x2: "0%", y2: "100%" },
+                React.createElement('stop', { offset: "0%", style: { stopColor: '#A3E635', stopOpacity: 0.7 } }),
+                React.createElement('stop', { offset: "100%", style: { stopColor: '#4D7C0F', stopOpacity: 0.3 } })
+            ),
+            React.createElement('linearGradient', { id: "grad3", x1: "0%", y1: "0%", x2: "0%", y2: "100%" },
+                React.createElement('stop', { offset: "0%", style: { stopColor: '#FACC15', stopOpacity: 0.6 } }),
+                React.createElement('stop', { offset: "100%", style: { stopColor: '#B45309', stopOpacity: 0.2 } })
+            ),
+             React.createElement('linearGradient', { id: "gradSilver", x1: "0%", y1: "0%", x2: "0%", y2: "100%" },
+                React.createElement('stop', { offset: "0%", style: { stopColor: '#f3f4f6', stopOpacity: 0.9 } }),
+                React.createElement('stop', { offset: "100%", style: { stopColor: '#9ca3af', stopOpacity: 0.7 } })
+            ),
+            React.createElement('pattern', { id: "floorPattern", patternUnits: "userSpaceOnUse", width: "100", height: "5" },
+                React.createElement('rect', { width: "100", height: "5", fill: "url(#gradSilver)" }),
+                React.createElement('line', { x1: "0", y1: "0", x2: "100", y2: "0", stroke: "rgba(0,0,0,0.2)", strokeWidth: "0.75" })
+            )
+        ),
+        buildings.map((b, i) => React.createElement(BuildingWithWindows, { key: `${animationKey}-b-${i}`, b: b })),
+        React.createElement(IconicTower, { key: `${animationKey}-it`, tower: iconicTower }),
+        cranes.map((c, i) => 
+            React.createElement('g', { key: i, transform: `translate(${c.x}, ${c.y})`},
+                React.createElement('rect', { x: -2.5, y: 0, width: 5, height: 300 - c.y, fill: '#94A3B8' }),
+                React.createElement('g', { className: 'crane-arm', style: { animationDelay: c.delay } },
+                    React.createElement('rect', { x: 0, y: -2.5, width: c.armLength, height: 5, fill: '#94A3B8' }),
+                    React.createElement('circle', { cx: c.armLength, cy: -2.5, r: 3, fill: 'red', className: 'blinking-light' })
+                )
+            )
+        )
+    );
+};
+
+const CreatorSection = () => (
+    React.createElement('section', { className: "py-24 bg-dark-bg" },
+        React.createElement('div', { className: "container mx-auto px-6" },
+            React.createElement('div', { className: "text-center mb-12" },
+                React.createElement('h2', { className: "text-4xl font-extrabold text-white mb-3" }, "Meet the Creator"),
+                React.createElement('p', { className: "text-slate-400 text-lg" }, "The mind behind SciGenius.")
+            ),
+            React.createElement('div', { className: "max-w-4xl mx-auto bg-[#0F111A] border border-slate-800 rounded-3xl p-8 md:p-12 shadow-2xl relative overflow-hidden" },
+                React.createElement('div', { className: "flex flex-col md:flex-row items-center gap-10" },
+                    // Image Column
+                    React.createElement('div', { className: "flex-shrink-0 relative" },
+                        React.createElement('div', { className: "w-48 h-48 rounded-full border-[6px] border-[#EF4444] overflow-hidden shadow-lg" },
+                            React.createElement('img', { 
+                                src: "https://i.imgur.com/NmdyAV9.jpeg", // Placeholder
+                                alt: "Mohamed Naguib",
+                                className: "w-full h-full object-cover grayscale filter" 
+                            })
+                        )
+                    ),
+                    // Text Column
+                    React.createElement('div', { className: "text-center md:text-left" },
+                        React.createElement('h3', { className: "text-3xl font-bold text-white mb-4" }, "Mohamed Naguib"),
+                        React.createElement('div', { className: "flex flex-wrap justify-center md:justify-start gap-3 mb-6" },
+                            React.createElement('span', { className: "px-4 py-1.5 rounded-full bg-[#1e293b] text-[#60A5FA] text-sm font-semibold tracking-wide" }, "AI Lead"),
+                            React.createElement('span', { className: "px-4 py-1.5 rounded-full bg-[#1e293b] text-[#60A5FA] text-sm font-semibold tracking-wide" }, "UI/UX Design"),
+                            React.createElement('span', { className: "px-4 py-1.5 rounded-full bg-[#1e293b] text-[#60A5FA] text-sm font-semibold tracking-wide" }, "App Development")
+                        ),
+                        React.createElement('p', { className: "text-slate-400 leading-relaxed text-lg" }, 
+                            "A passionate developer and designer with deep expertise in leading AI initiatives, crafting intuitive UI/UX, and full-stack application development. Dedicated to merging advanced technology with elegant design to empower users."
+                        )
+                    )
+                )
+            )
+        )
+    )
+);
+
+const Home = ({ language, setView, settings }) => {
+    const t = i18n[language];
+    const [activeFeature, setActiveFeature] = useState(null);
+
+    // Default fallback for settings
+    const bgIntensity = settings?.bgIntensity ?? 0.6;
+    const showCityscape = settings?.showCityscape ?? true;
+
+    const features = [
+        { 
+            id: 'planning', 
+            icon: PlanningIcon, 
+            title: t.capability1Title, 
+            desc: t.capability1Desc,
+            image: 'https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'
+        },
+        { 
+            id: 'scheduling', 
+            icon: ScheduleIcon, 
+            title: t.capability2Title,
+            desc: t.capability2Desc,
+            image: 'https://images.pexels.com/photos/669615/pexels-photo-669615.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'
+        },
+        { 
+            id: 'risk', 
+            icon: RiskIcon, 
+            title: t.capability3Title, 
+            desc: t.capability3Desc,
+            image: 'https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'
+        },
+        { 
+            id: 'budget', 
+            icon: BudgetIcon, 
+            title: t.capability4Title, 
+            desc: t.capability4Desc,
+            image: 'https://images.pexels.com/photos/590022/pexels-photo-590022.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'
+        },
+    ];
+
+    const HeroSection = () => {
+        const [activeIndex, setActiveIndex] = useState(0);
+
+        useEffect(() => {
+            const interval = setInterval(() => {
+                setActiveIndex(prevIndex => (prevIndex + 1) % features.length);
+            }, 4000); // Slide every 4 seconds
+            return () => clearInterval(interval);
+        }, [features.length]);
+
+        return React.createElement('section', { className: 'relative overflow-hidden' },
+            // START NEW CODE: Gradient Lights and Motion Effects controlled by Admin Settings
+             React.createElement('div', { className: 'absolute top-0 inset-x-0 h-[800px] pointer-events-none z-0 overflow-hidden' },
+                // Animated Background Grid
+                React.createElement('div', { className: 'absolute inset-0 bg-grid-motion opacity-20' }),
+                
+                // Floating Blobs
+                React.createElement('div', { className: 'bg-blob w-96 h-96 bg-brand-purple/20 top-[-50px] left-[-100px]', style: { animationDelay: '0s' } }),
+                React.createElement('div', { className: 'bg-blob w-80 h-80 bg-brand-pink/20 top-[100px] right-[-50px]', style: { animationDelay: '5s' } }),
+                React.createElement('div', { className: 'bg-blob w-64 h-64 bg-brand-cyan/20 bottom-[100px] left-[20%]', style: { animationDelay: '10s' } }),
+
+                // Top Glow Line
+                React.createElement('div', { className: 'absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-brand-purple-light to-transparent', style: { opacity: 0.7 + (bgIntensity * 0.3), boxShadow: `0 0 40px rgba(94,234,212,${0.6 * bgIntensity})` } }),
+                // Main Turquoise Glow
+                React.createElement('div', { 
+                    className: 'absolute top-[-400px] left-1/2 -translate-x-1/2 w-[1200px] h-[800px] blur-[120px] rounded-full',
+                    style: { background: 'radial-gradient(circle, #2DD4BF 0%, transparent 70%)', opacity: 0.4 * bgIntensity }
+                }),
+                // Green Hint Left
+                React.createElement('div', { 
+                     className: 'absolute top-[-300px] left-[10%] w-[800px] h-[600px] blur-[100px] rounded-full',
+                     style: { background: 'radial-gradient(circle, #A3E635 0%, transparent 70%)', opacity: 0.2 * bgIntensity }
+                }),
+                // Yellow Hint Right
+                 React.createElement('div', { 
+                     className: 'absolute top-[-300px] right-[10%] w-[800px] h-[600px] blur-[100px] rounded-full',
+                     style: { background: 'radial-gradient(circle, #FACC15 0%, transparent 70%)', opacity: 0.2 * bgIntensity }
+                })
+            ),
+            // END NEW CODE
+            React.createElement('div', { 
+                className: 'absolute inset-x-0 bottom-0 z-0 h-[50vh] max-h-[400px] w-full flex items-end justify-center overflow-hidden',
+                'aria-hidden': 'true'
+            },
+                showCityscape && React.createElement(AnimatedCityscape, null)
+            ),
+            React.createElement('div', { className: 'container mx-auto px-6 py-20 md:py-32' },
+                 React.createElement('div', { className: 'relative z-10 grid md:grid-cols-2 gap-12 items-center' },
+                    // Left: Hero Text
+                    React.createElement('div', { className: 'text-center md:text-left animate-slide-in-up' },
+                        React.createElement('h1', { className: 'text-4xl md:text-6xl font-extrabold text-white leading-tight' }, 
+                            t.homeHeroTitle
+                        ),
+                        React.createElement('p', { className: 'mt-6 text-lg text-brand-text-light' }, 
+                            t.homeHeroDescription
+                        ),
+                        React.createElement('div', { className: 'mt-8 flex justify-center md:justify-start' },
+                            React.createElement('button', {
+                                onClick: () => setView(AppView.Pricing),
+                                className: 'px-8 py-4 bg-cta-gradient text-white font-semibold rounded-lg shadow-lg shadow-brand-purple/30 transition-all transform hover:scale-105 hover:shadow-brand-purple/50'
+                            }, t.getStarted)
+                        )
+                    ),
+                    // Right: Platform Features Card
+                    React.createElement('div', { className: 'animate-slide-in-up', style: { animationDelay: '0.2s' } },
+                        React.createElement('div', { className: 'bg-dark-card backdrop-blur-xl rounded-2xl p-6 glow-border' },
+                            React.createElement('h3', { className: 'text-2xl font-bold text-white mb-6 text-center' }, "Platform Features"),
+                            
+                            // Carousel container
+                            React.createElement('div', { className: 'relative overflow-hidden h-[220px]' }, // Fixed height for carousel
+                                // Sliding track
+                                React.createElement('div', {
+                                    className: 'flex transition-transform duration-500 ease-in-out h-full',
+                                    style: { transform: `translateX(-${activeIndex * 100}%)` }
+                                },
+                                    features.map(feature => {
+                                        const Icon = feature.icon;
+                                        // Each slide item
+                                        return React.createElement('div', {
+                                            key: feature.id,
+                                            className: 'w-full flex-shrink-0 px-1 h-full'
+                                        },
+                                            React.createElement('button', {
+                                                onClick: () => setActiveFeature(feature),
+                                                className: 'w-full h-full bg-dark-card-solid border border-dark-border rounded-lg text-center hover:border-brand-purple-light transition-colors relative overflow-hidden group'
+                                            },
+                                                React.createElement('img', { src: feature.image, alt: feature.title, className: 'absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110' }),
+                                                React.createElement('div', { className: 'absolute inset-0 bg-gradient-to-t from-dark-card-solid via-dark-card-solid/70 to-transparent' }),
+                                                React.createElement('div', { className: 'relative p-6 h-full flex flex-col items-center justify-end' },
+                                                    React.createElement(Icon, { className: 'h-10 w-10 text-brand-purple-light mb-3' }),
+                                                    React.createElement('h4', { className: 'font-bold text-white text-lg' }, feature.title),
+                                                    React.createElement('p', { className: 'text-sm text-brand-text-light mt-1' }, feature.desc)
+                                                )
+                                            )
+                                        );
+                                    })
+                                )
+                            ),
+                            
+                            // Navigation dots
+                            React.createElement('div', { className: 'flex justify-center gap-2 mt-4' },
+                                features.map((_, index) =>
+                                    React.createElement('button', {
+                                        key: index,
+                                        onClick: () => setActiveIndex(index),
+                                        className: `w-2.5 h-2.5 rounded-full transition-colors ${activeIndex === index ? 'bg-brand-purple-light' : 'bg-dark-border hover:bg-dark-border/70'}`
+                                    })
+                                )
+                            )
+                        )
+                    )
+                 )
+            )
+        );
+    };
+
+    const CapabilitiesSection = () => {
+        const capabilities = [
+            { icon: PlanningIcon, title: t.capability1Title, desc: t.capability1Desc },
+            { icon: ScheduleIcon, title: t.capability2Title, desc: t.capability2Desc },
+            { icon: RiskIcon, title: t.capability3Title, desc: t.capability3Desc },
+            { icon: BudgetIcon, title: t.capability4Title, desc: t.capability4Desc },
+        ];
+
+        return React.createElement('section', { id: 'features', className: 'py-16 md:py-24' },
+            React.createElement('div', { className: 'container mx-auto px-6' },
+                React.createElement('div', { className: 'text-center max-w-3xl mx-auto mb-12' },
+                    React.createElement('h2', { className: 'text-3xl md:text-4xl font-bold text-white' }, t.capabilitiesTitle),
+                    React.createElement('p', { className: 'mt-4 text-lg text-brand-text-light' }, t.capabilitiesSubtitle)
+                ),
+                React.createElement('div', { className: 'grid md:grid-cols-2 lg:grid-cols-4 gap-8' },
+                    capabilities.map((feature, index) =>
+                        React.createElement('div', { 
+                            key: index, 
+                            className: 'bg-dark-card backdrop-blur-xl p-6 rounded-xl text-center glow-border transition-all duration-300 hover:-translate-y-2' 
+                        },
+                            React.createElement('div', { className: 'flex justify-center mb-4 text-brand-purple-light' }, React.createElement(feature.icon, { className: 'h-10 w-10' })),
+                            React.createElement('h3', { className: 'text-xl font-bold text-white mb-2' }, feature.title),
+                            React.createElement('p', { className: 'text-brand-text-light' }, feature.desc)
+                        )
+                    )
+                )
+            )
+        );
+    };
+    
+    const IndustriesSection = () => {
+        const industries = [
+            { title: t.industry1Title, desc: t.industry1Desc, features: [t.industry1Feature1, t.industry1Feature2, t.industry1Feature3] },
+            { title: t.industry2Title, desc: t.industry2Desc, features: [t.industry2Feature1, t.industry2Feature2, t.industry2Feature3] },
+            { title: t.industry3Title, desc: t.industry3Desc, features: [t.industry3Feature1, t.industry3Feature2, t.industry3Feature3] },
+        ];
+        return React.createElement('section', { id: 'industries', className: 'py-16 md:py-24 bg-dark-card-solid' },
+            React.createElement('div', { className: 'container mx-auto px-6' },
+                React.createElement('div', { className: 'text-center max-w-3xl mx-auto mb-12' },
+                    React.createElement('h2', { className: 'text-3xl md:text-4xl font-bold text-white' }, t.industriesTitle),
+                    React.createElement('p', { className: 'mt-4 text-lg text-brand-text-light' }, t.industriesSubtitle)
+                ),
+                React.createElement('div', { className: 'grid md:grid-cols-1 lg:grid-cols-3 gap-8' },
+                    industries.map((industry, i) => 
+                        React.createElement('div', { key: i, className: 'bg-dark-card backdrop-blur-xl rounded-xl p-8 flex flex-col glow-border' },
+                            React.createElement('h3', { className: 'text-2xl font-bold text-white' }, industry.title),
+                            React.createElement('p', { className: 'text-brand-text-light mt-2 mb-6 flex-grow' }, industry.desc),
+                            React.createElement('ul', { className: 'space-y-3' },
+                                industry.features.map((feat, fi) => React.createElement('li', { key: fi, className: 'flex items-start gap-3' },
+                                    React.createElement('div', { className: 'w-5 h-5 flex-shrink-0 mt-1 flex items-center justify-center rounded-full bg-brand-purple text-white' }, React.createElement(CheckIcon, { className: 'w-3 h-3' })),
+                                    React.createElement('span', { className: 'text-brand-text-light' }, feat)
+                                ))
                             )
                         )
                     )
                 )
             )
         )
-    );
-
-    const WhatWeDoSection = () => {
-        // Filter services based on status and settings
-        const activeServices = SERVICES.filter(s => s.isAvailable !== false && !disabledServices.includes(s.id));
-        const scrollingServices = [...activeServices, ...activeServices]; // Duplicate for loop
-
-        if (activeServices.length === 0) return null;
-
-        return React.createElement('section', { className: 'relative py-20 md:py-32 overflow-hidden bg-slate-50/80 dark:bg-white/5 backdrop-blur-sm border-y border-slate-200/50 dark:border-white/5' },
-            // Ambient Background Elements
-            React.createElement('div', { className: 'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full max-w-7xl pointer-events-none' },
-                React.createElement('div', { className: 'absolute top-0 right-0 w-96 h-96 bg-brand-blue/5 rounded-full blur-3xl mix-blend-multiply dark:mix-blend-screen opacity-50' }),
-                React.createElement('div', { className: 'absolute bottom-0 left-0 w-96 h-96 bg-brand-red/5 rounded-full blur-3xl mix-blend-multiply dark:mix-blend-screen opacity-50' })
-            ),
-            
-            React.createElement('div', { className: 'relative z-10' },
-                // Header
-                React.createElement('div', { className: 'container mx-auto px-6 mb-12 text-center' },
-                    React.createElement('h2', { className: 'text-3xl md:text-5xl font-bold text-slate-900 dark:text-white leading-tight tracking-tight' }, 
-                        language === 'ar' ? 'مجموعة أدواتنا الذكية' : 'Our Intelligent Toolset'
-                    ),
-                    React.createElement('p', { className: 'mt-4 text-lg text-slate-500 dark:text-light-gray font-light leading-relaxed max-w-2xl mx-auto' },
-                        language === 'ar' ? 'استكشف مجموعة شاملة من خدمات الذكاء الاصطناعي المصممة لتمكينك.' : 'Explore a comprehensive suite of AI services designed to empower you.'
-                    )
-                ),
-                
-                // Auto-Scrolling Marquee Container
-                React.createElement('div', { 
-                    className: 'relative w-full overflow-hidden',
-                    dir: 'ltr'
-                },
-                    // Gradient Masks for smooth fade in/out
-                    React.createElement('div', { className: 'absolute top-0 left-0 h-full w-20 z-10 bg-gradient-to-r from-slate-50/80 dark:from-[#0b0f19] to-transparent pointer-events-none' }),
-                    React.createElement('div', { className: 'absolute top-0 right-0 h-full w-20 z-10 bg-gradient-to-l from-slate-50/80 dark:from-[#0b0f19] to-transparent pointer-events-none' }),
-
-                    React.createElement('div', { 
-                        className: 'flex w-max animate-scroll-left pause-on-hover'
-                    },
-                        scrollingServices.map((service, index) => {
-                             const title = t[service.titleKey];
-                             const descKey = service.titleKey.replace('Title', 'Desc');
-                             const desc = t[descKey];
-                             
-                             return React.createElement('div', { 
-                                key: `${service.id}-${index}`,
-                                onClick: () => onNavigateToServices(),
-                                dir: language === 'ar' ? 'rtl' : 'ltr',
-                                className: 'relative flex-shrink-0 w-[85vw] sm:w-[350px] px-4 cursor-pointer group'
-                            },
-                                React.createElement('div', { 
-                                    className: 'h-full bg-white/80 dark:bg-dark-card/50 backdrop-blur-xl border border-white/40 dark:border-white/10 rounded-[2rem] p-8 transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_20px_40px_-15px_rgba(255,255,255,0.05)] overflow-hidden'
-                                },
-                                    React.createElement('div', { className: 'absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br from-brand-red/20 to-brand-blue/20 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500' }),
-
-                                    React.createElement('div', { className: 'flex justify-between items-start mb-6' },
-                                        React.createElement('div', { className: 'relative w-16 h-16 rounded-2xl bg-slate-50 dark:bg-white/5 flex items-center justify-center border border-slate-100 dark:border-white/5 group-hover:scale-110 transition-transform duration-500' },
-                                            React.cloneElement(service.icon(), { className: 'h-8 w-8 text-slate-700 dark:text-white group-hover:text-brand-red transition-colors duration-300' })
-                                        ),
-                                        service.isPremium && React.createElement('span', { className: 'px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-amber-200 to-yellow-400 text-yellow-900 shadow-sm' }, 'PRO')
-                                    ),
-
-                                    React.createElement('h3', { className: 'text-xl font-bold text-slate-900 dark:text-white mb-3 leading-snug' }, title),
-                                    React.createElement('p', { className: 'text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-8 line-clamp-3' }, desc),
-
-                                    React.createElement('div', { className: 'flex items-center text-brand-red font-bold text-sm' },
-                                        React.createElement('span', { className: 'relative overflow-hidden' },
-                                            React.createElement('span', { className: 'inline-block transition-transform duration-300 group-hover:-translate-y-full' }, language === 'ar' ? 'اكتشف المزيد' : 'Discover More'),
-                                            React.createElement('span', { className: 'absolute top-0 left-0 inline-block transition-transform duration-300 translate-y-full group-hover:translate-y-0' }, language === 'ar' ? 'جرب الآن' : 'Try Now')
-                                        ),
-                                        React.createElement(ArrowLeftIcon, { className: `w-4 h-4 mx-2 transition-transform duration-300 group-hover:translate-x-1 ${language === 'ar' ? 'group-hover:-translate-x-1' : 'transform rotate-180'}` })
-                                    )
-                                )
-                            );
-                        })
-                    )
-                )
-            )
-        );
     };
 
-    const ProjectsSection = () => {
-        const projects = [
-            'https://picsum.photos/seed/project1/600/400',
-            'https://picsum.photos/seed/project2/600/400',
-            'https://picsum.photos/seed/project3/600/400',
-            'https://picsum.photos/seed/project4/600/400',
-        ];
-        return React.createElement('section', { className: 'py-20' },
-            React.createElement('div', { className: 'container mx-auto px-6' },
-                React.createElement('div', { className: 'text-center max-w-3xl mx-auto mb-12' },
-                    React.createElement('h2', { className: 'text-3xl md:text-4xl font-bold text-slate-900 dark:text-white' }, 
-                         language === 'ar' ? 'بعض من مشاريعنا المنجزة' : 'Our Finished Projects'
-                    ),
-                    React.createElement('p', { className: 'mt-4 text-slate-500 dark:text-light-gray' },
-                         language === 'ar' ? 'شاهد كيف ساعدنا الآخرين على تحقيق أفكارهم. من التصاميم الداخلية إلى العروض التقديمية، قدراتنا لا حدود لها.' : 'See how we have helped others bring their ideas to life. From interior designs to presentation slides, the capabilities are endless.'
-                    )
-                ),
-                React.createElement('div', { className: 'grid md:grid-cols-2 gap-8' },
-                    projects.map((src, index) =>
-                        React.createElement('div', { key: index, className: 'group relative overflow-hidden rounded-2xl shadow-lg border border-slate-200 dark:border-white/10' },
-                            React.createElement('img', { src, alt: `Project ${index + 1}`, className: 'w-full h-full object-cover group-hover:scale-110 transition-transform duration-500' }),
-                            React.createElement('div', { className: 'absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm' },
-                                React.createElement('p', { className: 'text-white text-lg font-bold' }, `Showcase ${index + 1}`)
-                            )
-                        )
-                    )
-                )
-            )
-        );
-    };
-
-    const TeamSection = () => {
-         return React.createElement('section', { className: 'bg-slate-50/80 dark:bg-white/5 backdrop-blur-sm py-20 border-y border-slate-200/50 dark:border-white/5' },
-            React.createElement('div', { className: 'container mx-auto px-6' },
-                React.createElement('div', { className: 'text-center max-w-3xl mx-auto mb-12' },
-                    React.createElement('h2', { className: 'text-3xl md:text-4xl font-bold text-slate-900 dark:text-white' }, 
-                        language === 'ar' ? 'تعرف على المطور' : 'Meet the Creator'
-                    ),
-                    React.createElement('p', { className: 'mt-4 text-slate-500 dark:text-light-gray' },
-                        language === 'ar' ? 'العقل المدبر وراء عبقري العلوم.' : 'The mind behind SciGenius.'
-                    )
-                ),
-                React.createElement('div', { className: 'max-w-4xl mx-auto bg-white/60 dark:bg-dark-bg/60 backdrop-blur-md border border-slate-100 dark:border-white/10 p-8 rounded-3xl shadow-xl flex flex-col md:flex-row items-center gap-8' },
-                    React.createElement('div', { className: 'flex-shrink-0' },
-                        React.createElement('div', { className: 'relative w-48 h-48 rounded-full overflow-hidden border-4 border-brand-red shadow-lg' },
-                            React.createElement('img', { 
-                                src: 'https://i.imgur.com/NmdyAV9.jpeg', 
-                                alt: 'Mohamed Naguib', 
-                                className: 'w-full h-full object-cover' 
-                            })
-                        )
-                    ),
-                    React.createElement('div', { className: `text-center ${language === 'ar' ? 'md:text-right' : 'md:text-left'} flex-grow` },
-                        React.createElement('h3', { className: 'text-2xl font-bold text-slate-900 dark:text-white mb-2' }, 'Mohamed Naguib'),
-                        React.createElement('div', { className: 'flex flex-wrap justify-center md:justify-start gap-2 mb-4' },
-                            ['AI Lead', 'UI/UX Design', 'App Development'].map((role, i) => 
-                                React.createElement('span', { key: i, className: 'px-3 py-1 bg-brand-blue/10 text-brand-blue dark:text-blue-300 rounded-full text-xs font-semibold' }, role)
-                            )
-                        ),
-                        React.createElement('p', { className: 'text-slate-600 dark:text-light-gray leading-relaxed' }, 
-                            language === 'ar' 
-                                ? 'مطور ومصمم شغوف يتمتع بخبرة عميقة في قيادة مشاريع الذكاء الاصطناعي، وتصميم تجارب مستخدم بديهية، وتطوير تطبيقات متكاملة. يهدف إلى دمج التكنولوجيا المتقدمة مع التصميم الأنيق لتمكين المستخدمين.'
-                                : 'A passionate developer and designer with deep expertise in leading AI initiatives, crafting intuitive UI/UX, and full-stack application development. Dedicated to merging advanced technology with elegant design to empower users.'
-                        )
-                    )
-                )
-            )
-        );
-    };
-
-
-    return React.createElement('div', { className: "w-full" },
+    return React.createElement('div', null,
+        React.createElement(FeatureModal, { feature: activeFeature, onClose: () => setActiveFeature(null), language: language }),
         React.createElement(HeroSection, null),
-        React.createElement(WhatWeDoSection, null),
-        React.createElement(ProjectsSection, null),
-        React.createElement(TeamSection, null)
+        React.createElement(CapabilitiesSection, null),
+        React.createElement(IndustriesSection, null),
+        React.createElement(CreatorSection, null)
     );
 };
 

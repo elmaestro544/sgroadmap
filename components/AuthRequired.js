@@ -14,8 +14,8 @@ const AuthRequired = ({ language, onLoginClick }) => {
       React.createElement('p', { className: "text-slate-500 dark:text-brand-text-light mb-6" }, t.authRequiredMessage),
       React.createElement('button', {
         onClick: onLoginClick,
-        className: "bg-brand-red hover:bg-red-500 text-white font-bold py-2.5 px-6 rounded-full transition-colors shadow-lg shadow-brand-red/30 hover:shadow-brand-red/50"
-      }, t.getStarted),
+        className: "bg-brand-red hover:bg-red-600 text-white font-bold py-2.5 px-6 rounded-full transition-colors shadow-lg shadow-red-500/30 hover:shadow-red-500/50"
+      }, t.loginRegister),
       React.createElement('p', { className: "text-xs text-slate-500 dark:text-brand-text-light mt-4" }, t.noCreditCardRequired)
     )
   );

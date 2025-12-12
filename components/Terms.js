@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 const Terms = ({ language }) => {
@@ -17,7 +18,7 @@ const Terms = ({ language }) => {
             {
                 title: "1. Introduction",
                 content: [
-                    "Welcome to SciGenius ('we', 'us', or 'our'). These Terms and Conditions govern your use of our website and services (collectively, the 'Service'). By accessing or using the Service, you agree to be bound by these Terms. If you disagree with any part of the terms, you may not access the Service."
+                    "Welcome to PM Roadmap ('we', 'us', or 'our'). These Terms and Conditions govern your use of our website and services (collectively, the 'Service'). By accessing or using the Service, you agree to be bound by these Terms. If you disagree with any part of the terms, you may not access the Service."
                 ]
             },
             {
@@ -43,7 +44,7 @@ const Terms = ({ language }) => {
             {
                 title: "5. Intellectual Property",
                 content: [
-                    "The Service and its original content (excluding Content provided by users), features, and functionality are and will remain the exclusive property of SciGenius and its licensors. The Service is protected by copyright, trademark, and other laws of both the United States and foreign countries."
+                    "The Service and its original content (excluding Content provided by users), features, and functionality are and will remain the exclusive property of PM Roadmap and its licensors. The Service is protected by copyright, trademark, and other laws of both the United States and foreign countries."
                 ]
             },
             {
@@ -57,7 +58,7 @@ const Terms = ({ language }) => {
                 title: "7. Disclaimer of Warranties; Limitation of Liability",
                 content: [
                     "The service is provided on an 'AS IS' and 'AS AVAILABLE' basis. We do not warrant that the results of using the service will be accurate or reliable.",
-                    "In no case shall SciGenius, our directors, officers, employees, affiliates, agents, contractors, interns, suppliers, service providers or licensors be liable for any injury, loss, claim, or any direct, indirect, incidental, punitive, special, or consequential damages of any kind."
+                    "In no case shall PM Roadmap, our directors, officers, employees, affiliates, agents, contractors, interns, suppliers, service providers or licensors be liable for any injury, loss, claim, or any direct, indirect, incidental, punitive, special, or consequential damages of any kind."
                 ]
             },
             {
@@ -75,7 +76,7 @@ const Terms = ({ language }) => {
             {
                 title: "10. Contact Us",
                 content: [
-                    "If you have any questions about these Terms, please contact us at roadmap.casa@gmail.com."
+                    "If you have any questions about these Terms, please contact us at info@roadmap.casa."
                 ]
             }
         ]
@@ -88,7 +89,7 @@ const Terms = ({ language }) => {
             {
                 title: "1. مقدمة",
                 content: [
-                    "أهلاً بك في 'عبقري العلوم' (المشار إليه بـ 'نحن' أو 'لنا'). تحكم هذه الشروط والأحكام استخدامك لموقعنا وخدماتنا (يشار إليها مجتمعة بـ 'الخدمة'). من خلال الوصول إلى الخدمة أو استخدامها، فإنك توافق على الالتزام بهذه الشروط. إذا كنت لا توافق على أي جزء من الشروط، فلا يجوز لك الوصول إلى الخدمة."
+                    "أهلاً بك في 'خارطة طريق المشروع' (المشار إليه بـ 'نحن' أو 'لنا'). تحكم هذه الشروط والأحكام استخدامك لموقعنا وخدماتنا (يشار إليها مجتمعة بـ 'الخدمة'). من خلال الوصول إلى الخدمة أو استخدامها، فإنك توافق على الالتزام بهذه الشروط. إذا كنت لا توافق على أي جزء من الشروط، فلا يجوز لك الوصول إلى الخدمة."
                 ]
             },
             {
@@ -114,7 +115,7 @@ const Terms = ({ language }) => {
             {
                 title: "5. الملكية الفكرية",
                 content: [
-                    "الخدمة ومحتواها الأصلي (باستثناء المحتوى المقدم من قبل المستخدمين) والميزات والوظائف هي وستبقى ملكية حصرية لـ 'عبقري العلوم' ومرخصيه. الخدمة محمية بموجب حقوق النشر والعلامات التجارية والقوانين الأخرى في كل من الولايات المتحدة والدول الأجنبية."
+                    "الخدمة ومحتواها الأصلي (باستثناء المحتوى المقدم من قبل المستخدمين) والميزات والوظائف هي وستبقى ملكية حصرية لـ 'خارطة طريق المشروع' ومرخصيه. الخدمة محمية بموجب حقوق النشر والعلامات التجارية والقوانين الأخرى في كل من الولايات المتحدة والدول الأجنبية."
                 ]
             },
             {
@@ -128,7 +129,7 @@ const Terms = ({ language }) => {
                 title: "7. إخلاء المسؤولية عن الضمانات؛ تحديد المسؤولية",
                 content: [
                     "يتم توفير الخدمة على أساس 'كما هي' و 'كما هي متاحة'. نحن لا نضمن أن نتائج استخدام الخدمة ستكون دقيقة أو موثوقة.",
-                    "لا يتحمل 'عبقري العلوم' أو مديرونا أو موظفونا أو الشركات التابعة لنا أو وكلائنا أو مقاولونا أو متدربونا أو موردونا أو مقدمو الخدمات أو المرخصون بأي حال من الأحوال المسؤولية عن أي إصابة أو خسارة أو مطالبة أو أي أضرار مباشرة أو غير مباشرة أو عرضية أو تأديبية أو خاصة أو تبعية من أي نوع."
+                    "لا يتحمل 'خارطة طريق المشروع' أو مديرونا أو موظفونا أو الشركات التابعة لنا أو وكلائنا أو مقاولونا أو متدربونا أو موردونا أو مقدمو الخدمات أو المرخصون بأي حال من الأحوال المسؤولية عن أي إصابة أو خسارة أو مطالبة أو أي أضرار مباشرة أو غير مباشرة أو عرضية أو تأديبية أو خاصة أو تبعية من أي نوع."
                 ]
             },
             {
@@ -146,7 +147,7 @@ const Terms = ({ language }) => {
             {
                 title: "10. اتصل بنا",
                 content: [
-                    "إذا كان لديك أي أسئلة حول هذه الشروط، يرجى الاتصال بنا على roadmap.casa@gmail.com."
+                    "إذا كان لديك أي أسئلة حول هذه الشروط، يرجى الاتصال بنا على info@roadmap.casa."
                 ]
             }
         ]
@@ -154,7 +155,7 @@ const Terms = ({ language }) => {
 
     const content = isArabic ? ar : en;
 
-    return React.createElement('div', { className: "max-w-4xl mx-auto py-8 px-4 prose prose-slate dark:prose-invert" },
+    return React.createElement('div', { className: "max-w-4xl mx-auto py-16 px-4" },
         React.createElement('div', { className: "text-center mb-10" },
             React.createElement('h1', { className: "text-4xl font-extrabold text-slate-900 dark:text-brand-text" }, content.title),
             React.createElement('p', { className: "text-sm text-slate-500 dark:text-brand-text-light" }, content.lastUpdated)

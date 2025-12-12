@@ -1,126 +1,134 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SciGenius (عبقري العلوم)</title>
-    <script>
-        // Initialize theme immediately to prevent flash
-        (function() {
-            var theme = localStorage.getItem('theme');
-            // Default to dark if no setting found, or if setting is 'dark'
-            if (theme === 'dark' || !theme) {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
-        })();
-    </script>
+    <title>PM Roadmap | AI-Powered Project & Construction Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Merriweather:wght@400;700&family=Lato:wght@400;700&family=Playfair+Display:wght@400;700&family=Montserrat:wght@400;700&family=Roboto+Slab:wght@400;700&display=swap" rel="stylesheet">
-    
-    <!-- n8n Chat Style -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- n8n Chatbot Styles -->
     <link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
-
     <style>
         html {
             scroll-behavior: smooth;
+            color-scheme: dark; /* Crucial for native date pickers/scrollbars to look correct in dark mode */
         }
-
-        @keyframes gradient-animation {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        /* Infinite Horizontal Scroll Animation */
-        @keyframes scroll-left {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
-        .animate-scroll-left {
-            animation: scroll-left 40s linear infinite;
-        }
-        .pause-on-hover:hover {
-            animation-play-state: paused;
-        }
-
-        /* Light Theme (Default) - Inverted: White BG, Blue Glow */
         body {
-            background-color: #ffffff;
-            background-image: 
-                radial-gradient(circle at 50% 0%, #D2E9FE 0%, transparent 60%), 
-                radial-gradient(ellipse at 50% 100%, #D2E9FE 0%, transparent 70%);
-            background-attachment: fixed;
-            background-size: 100% 100%;
-            background-repeat: no-repeat;
-            animation: none;
-            color: #0f172a; /* slate-900 */
-            transition: color 0.3s ease;
+            background-color: #0D0C13;
+            color: #f8fafc;
         }
+        
+        /* --- Force n8n Chatbot Theme --- */
+        :root {
+            --chat--color-primary: #2DD4BF !important; /* Brand Turquoise */
+            --chat--color-secondary: #0D0C13 !important; /* Main Dark BG */
+            --chat--color-dark: #14121E !important;
+            --chat--color-light: #F8FAFC !important; /* Brand Text */
+            
+            --chat--font-family: 'Poppins', sans-serif !important;
+            
+            /* Header */
+            --chat--header--background: linear-gradient(135deg, #2DD4BF 0%, #A3E635 100%) !important;
+            --chat--header--color: #ffffff !important;
+            
+            /* Window / Backgrounds */
+            --chat--window--background: #14121E !important; /* Dark Card Solid */
+            --chat--background: #14121E !important;
+            --chat--window--border-radius: 16px !important;
+            --chat--window--width: 400px !important;
+            --chat--window--height: 650px !important;
+            
+            /* Inputs */
+            --chat--input--background: #0D0C13 !important;
+            --chat--input--color: #F8FAFC !important;
+            --chat--input--border: 1px solid rgba(45, 212, 191, 0.2) !important;
+            --chat--input--border-radius: 12px !important;
+            
+            /* Messages */
+            --chat--message--bot--background: #1E1B2E !important;
+            --chat--message--bot--color: #F8FAFC !important;
+            --chat--message--bot--border: 1px solid rgba(255,255,255,0.05) !important;
+            
+            --chat--message--user--background: linear-gradient(135deg, #2DD4BF 0%, #2ba898 100%) !important;
+            --chat--message--user--color: #ffffff !important;
+            
+            /* Toggle Button */
+            --chat--toggle--background: #2DD4BF !important;
+            --chat--toggle--hover--background: #5EEAD4 !important;
+            --chat--toggle--active--background: #2DD4BF !important;
+            --chat--toggle--color: #ffffff !important;
+            --chat--toggle--size: 60px !important;
+        }
+
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: transparent;
+            background: #1E1B2E;
         }
         ::-webkit-scrollbar-thumb {
-            background-color: #cbd5e1; /* slate-300 */
+            background-color: #2DD4BF; /* brand-purple -> new turquoise */
             border-radius: 10px;
-            border: 2px solid #ffffff;
+            border: 2px solid #1E1B2E;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background-color: #94a3b8; /* slate-400 */
+            background-color: #5EEAD4; /* brand-purple-light -> new light turquoise */
         }
         option {
-            color: #1f2937;
-            background-color: #ffffff;
+            color: #f8fafc;
+            background-color: #1E1B2E;
         }
 
-        /* Dark Theme Styles - Minimalist Navy */
-        html.dark body {
-            background-color: #020617; /* Deep Navy Base */
-            background-image: 
-                radial-gradient(circle at 50% 0%, rgba(29, 78, 216, 0.15) 0%, transparent 50%), 
-                radial-gradient(ellipse at 50% 100%, rgba(29, 78, 216, 0.3) 0%, transparent 70%);
-            background-attachment: fixed;
-            background-size: 100% 100%;
-            background-repeat: no-repeat;
-            animation: none;
-            color: #f8fafc;
+        /* Gradient border utility */
+        .glow-border {
+            position: relative;
+            z-index: 1;
         }
-        .dark ::-webkit-scrollbar-track {
-            background: #020617;
+        .glow-border::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            padding: 1px;
+            border-radius: inherit; /* Use parent's border-radius */
+            background: linear-gradient(145deg, rgba(45, 212, 191, 0.4), rgba(45, 212, 191, 0.1), rgba(45, 212, 191, 0.4));
+            -webkit-mask: 
+                linear-gradient(#fff 0 0) content-box, 
+                linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+            z-index: -1;
         }
-        .dark ::-webkit-scrollbar-thumb {
-            background-color: #1e3a8a;
-            border: 2px solid #020617;
+        .sidebar-glow::before {
+             content: "";
+             position: absolute;
+             top: 0;
+             left: 0;
+             bottom: 0;
+             width: 2px;
+             background: linear-gradient(to bottom, #5EEAD4, #A3E635, #FACC15);
+             box-shadow: 0 0 10px #5EEAD4, 0 0 20px #A3E635;
+             opacity: 0.6;
         }
-        .dark ::-webkit-scrollbar-thumb:hover {
-            background-color: #3b82f6;
-        }
-        .dark option {
-            color: #f8fafc;
-            background-color: #0f172a;
-        }
+
 
         /* Animations */
         @keyframes spin {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
+        @keyframes pulse {
+            50% {
+                opacity: .5;
+            }
         }
-        .animate-float {
-            animation: float 6s ease-in-out infinite;
+        .animate-pulse-fast {
+            animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
-        
         @keyframes slide-in-up {
             from {
                 opacity: 0;
@@ -134,8 +142,6 @@
         .animate-slide-in-up {
             animation: slide-in-up 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
         }
-        
-        /* Welcome Modal Animations */
         @keyframes fade-in-up {
             from {
                 opacity: 0;
@@ -150,123 +156,186 @@
             animation: fade-in-up 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
         }
 
-        /* n8n Chat Theme Overrides - Modern Navy/Red */
-        :root {
-            --chat--color-primary: #ef4444; /* Brand Red */
-            --chat--color-secondary: #00205B; /* Brand Blue */
-            --chat--window--width: 400px;
-            --chat--window--height: 600px;
-            --chat--window--border-radius: 1.5rem;
-            --chat--header--height: 64px;
-            --chat--spacing: 1rem;
-            --chat--toggle--size: 64px;
-            
-            /* Toggle Button */
-            --chat--toggle--background: var(--chat--color-primary);
-            --chat--toggle--hover--background: #dc2626;
-            --chat--toggle--active--background: #b91c1c;
-            --chat--toggle--color: #ffffff;
-            
-            /* Light Mode Defaults */
-            --chat--window--background: #ffffff;
-            --chat--header--background: var(--chat--color-secondary);
-            --chat--header--color: #ffffff;
-            
-            /* Light Mode: High Contrast */
-            --chat--message--bot--background: #f3f4f6; /* Light gray */
-            --chat--message--bot--color: #1f2937; /* Very dark gray text */
-            
-            --chat--message--user--background: var(--chat--color-secondary);
-            --chat--message--user--color: #ffffff;
-            
-            --chat--input--background: #ffffff;
-            --chat--input--color: #0f172a;
-            --chat--input--border-color: #e2e8f0;
-            --chat--input--placeholder-color: #94a3b8;
-            --chat--input--button--color: var(--chat--color-primary);
-            
-            /* Font Family Override */
-            font-family: 'Poppins', sans-serif;
+        /* Cityscape Animation */
+        @keyframes grow-building {
+            from {
+                transform: scaleY(0);
+                opacity: 0;
+            }
+            to {
+                transform: scaleY(1);
+                opacity: 1;
+            }
+        }
+        .building {
+            transform-origin: bottom;
+            animation: grow-building 1.5s cubic-bezier(0.645, 0.045, 0.355, 1.000) forwards;
+        }
+        @keyframes crane-arm-swing {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(45deg); }
+        }
+        .crane-arm {
+            transform-origin: 2.5px 2.5px;
+            animation: crane-arm-swing 15s ease-in-out infinite;
+        }
+        @keyframes light-blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.2; }
+        }
+        .blinking-light {
+            animation: light-blink 2s infinite;
         }
 
-        /* Dark Mode Chat Overrides */
-        html.dark {
-            /* Background matches App Navy */
-            --chat--window--background: #020617; 
-            --chat--header--background: #0f172a; /* Slightly lighter navy for header */
-            --chat--header--color: #f8fafc;
-            
-            /* Bot Message: Slate background, White text */
-            --chat--message--bot--background: #1e293b;
-            --chat--message--bot--color: #ffffff; /* FORCE WHITE TEXT */
-            
-            /* User Message: Red background, White text (High Contrast) */
-            --chat--message--user--background: #ef4444;
-            --chat--message--user--color: #ffffff;
-            
-            /* Input Area */
-            --chat--input--background: #020617;
-            --chat--input--color: #ffffff;
-            --chat--input--border-color: #334155;
-            --chat--input--placeholder-color: #94a3b8;
-            --chat--input--button--color: #ef4444;
+        /* New Background Motion Effects */
+        .bg-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            animation: blob-float 15s infinite alternate ease-in-out;
+            pointer-events: none;
+        }
+        @keyframes blob-float {
+            0% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -40px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.95); }
+            100% { transform: translate(0, 0) scale(1); }
+        }
+        .bg-grid-motion {
+            background-size: 60px 60px;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            animation: grid-scroll 30s linear infinite;
+        }
+        @keyframes grid-scroll {
+            0% { background-position: 0 0; }
+            100% { background-position: 60px 60px; }
         }
 
-        /* Global Chat Customizations to remove border and style title */
-        .chat-window, .n8n-chat-window {
-            border: none !important;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3) !important;
-        }
-        
-        .chat-header-title, .n8n-chat-header-title {
-            font-size: 1rem !important; /* Match website header menu (text-base) */
-            font-weight: 600 !important;
-        }
+        /* Print-specific styles */
+        @media print {
+            @page {
+                size: auto;
+                margin: 0mm;
+            }
 
-        /* Force white text in chat input during dark mode */
-        html.dark .n8n-chat-window textarea,
-        html.dark .chat-window textarea,
-        html.dark .n8n-chat-window input,
-        html.dark .chat-window input {
-            color: #ffffff !important;
-            caret-color: #ffffff !important;
+            html, body, #root, main {
+                height: auto !important;
+                min-height: 0 !important;
+                width: 100% !important;
+                overflow: visible !important;
+                position: static !important;
+                background-color: #ffffff !important;
+                color: #000000 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                display: block !important;
+                -webkit-print-color-adjust: exact; /* Crucial for Gantt bars */
+                print-color-adjust: exact;
+            }
+
+            /* Reset Flexbox and Grid Layouts that confine height */
+            .flex, .h-screen, .min-h-screen, .h-full, .flex-1, .flex-grow, .overflow-hidden, .overflow-y-auto, .overflow-auto {
+                height: auto !important;
+                min-height: 0 !important;
+                flex: none !important;
+                overflow: visible !important;
+                display: block !important;
+            }
+
+            /* Hide non-printable elements */
+            header, aside, .non-printable, footer, .sidebar-glow {
+                display: none !important;
+            }
+
+            /* Printable container specific overrides */
+            .printable-container {
+                height: auto !important;
+                width: 100% !important;
+                overflow: visible !important;
+                border: none !important;
+                box-shadow: none !important;
+                padding: 20px !important;
+                margin: 0 !important;
+                position: static !important;
+                display: block !important;
+                background-color: white !important;
+            }
+
+            .printable-content {
+                transform: none !important; /* Reset zoom */
+                width: 100% !important;
+                height: auto !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: visible !important;
+                display: block !important;
+            }
+
+            /* Content Styling for Print */
+            .printable-content * {
+                color: #000 !important;
+                text-shadow: none !important;
+                background-color: transparent !important;
+                box-shadow: none !important;
+            }
+            
+            /* Borders */
+            .border, .border-b, .border-t, .border-l, .border-r {
+                border-color: #e5e7eb !important; /* gray-200 */
+            }
+
+            /* Page Breaks */
+            .break-before-page {
+                page-break-before: always !important;
+                break-before: page !important;
+            }
+            .break-inside-avoid {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            /* Hide scrollbars */
+            ::-webkit-scrollbar {
+                display: none;
+            }
         }
     </style>
     <script>
       tailwind.config = {
-        darkMode: 'class', // Enable class-based dark mode
+        darkMode: 'class', // Using class for consistency, but theme is dark by default.
         theme: {
           fontFamily: {
             sans: ['Poppins', 'Arial', 'sans-serif'],
           },
           extend: {
             colors: {
-              'brand-red': '#ef4444',
-              'brand-blue': '#00205B',
-              'brand-text': '#f8fafc',
-              'brand-text-light': '#94a3b8',
-
-              // New colors from reference site
-              'secondary': '#FF2D2D',
-              'dark-bg': '#020617', // Slate 950
-              'dark-card': '#1e293b', // Slate 800
-              'light-gray': '#C4C4C4',
+              'brand-purple': '#2DD4BF', // turquoise
+              'brand-purple-light': '#5EEAD4', // light turquoise
+              'brand-pink': '#A3E635', // green
+              'brand-cyan': '#FACC15', // yellow
+              'brand-red': '#EF4444', // red
+              
+              'dark-bg': '#0D0C13',
+              'dark-card': 'rgba(20, 18, 30, 0.5)',
+              'dark-card-solid': '#14121E',
+              'dark-border': 'rgba(45, 212, 191, 0.2)',
+              'brand-text': '#F8FAFC',
+              'brand-text-light': '#94A3B8', // slate-400
             },
             backgroundImage: {
-              // Updated gradients to be more subtle and navy-focused
-              'card-gradient': 'linear-gradient(145deg, #0f172a 0%, #1e293b 100%)', 
-              'input-gradient': 'linear-gradient(145deg, #0f172a 0%, #1e293b 100%)',
-              // Light theme subtle gradients
-              'light-card-gradient': 'linear-gradient(145deg, #ffffff 0%, #f8fafc 100%)',
-              'light-input-gradient': 'linear-gradient(145deg, #f1f5f9 0%, #ffffff 100%)',
+              'brand-gradient': 'linear-gradient(to right, #2DD4BF, #A3E635)',
+              'button-gradient': 'linear-gradient(to right, #2DD4BF, #A3E635)',
+              'cta-gradient': 'linear-gradient(to right, #2DD4BF, #A3E635, #FACC15)',
             },
             backdropBlur: {
                 'xl': '20px',
             },
             boxShadow: {
-              'glow-red': '0 0 20px 0 rgba(239, 68, 68, 0.4)',
-              'glow-blue': '0 0 20px 0 rgba(59, 130, 246, 0.3)',
-              'card': '0 10px 25px -5px rgba(2, 6, 23, 0.6), 0 8px 10px -6px rgba(2, 6, 23, 0.6)', // Darker shadow for navy theme
+              'glow-purple': '0 0 20px 0 rgba(45, 212, 191, 0.4)',
+              'glow-pink': '0 0 20px 0 rgba(163, 230, 53, 0.4)',
             }
           }
         }
@@ -274,70 +343,19 @@
     </script>
 <link rel="stylesheet" href="/index.css">
 </head>
-<body>
+<body class="dark">
     <div id="root"></div>
 
     <!-- API Key configuration -->
     <script src="env.js"></script>
     
-    <!-- Libraries for Data Analysis & Presentation Features -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
-    <script>
-        if (typeof pdfjsLib !== 'undefined') {
-            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
-        }
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-    <script>
-      // Globally register the datalabels plugin
-      if (typeof Chart !== 'undefined' && typeof ChartDataLabels !== 'undefined') {
-          Chart.register(ChartDataLabels);
-      }
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/mermaid@8.13.5/dist/mermaid.min.js"></script>
-    <script>
-        if (typeof mermaid !== 'undefined') {
-            mermaid.initialize({ startOnLoad: false, theme: 'default' });
-        }
-    </script>
-    <!-- Libraries for Presentation Export -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/3.12.0/pptxgen.bundle.js"></script>
-    
-    <!-- Libraries for Video Generator -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/util.min.js"></script>
-    <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.min.js"></script>
-
-    <!-- n8n Chatbot Initialization -->
-    <script type="module">
-        import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
-
-        createChat({
-            webhookUrl: 'https://n8n.roadmap.casa/webhook/4ca36ee3-8e89-4277-ada7-82560d2be2e8/chat',
-            initialMessages: [
-                'Hi there! 👋',
-                'How can I help you today?'
-            ],
-            i18n: {
-                en: {
-                    title: 'SciGenius Support',
-                    subtitle: 'Ask us anything',
-                    inputPlaceholder: 'Type your message...',
-                },
-            },
-        });
-    </script>
-
     <script type="importmap">
 {
   "imports": {
     "@google/genai": "https://esm.sh/@google/genai?run",
-    "@perplexity-ai/perplexity_ai": "https://esm.sh/@perplexity-ai/perplexity_ai?run",
-    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2",
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.39.8",
     "react": "https://esm.sh/react@18.2.0",
+    "react-dom": "https://esm.sh/react-dom@18.2.0",
     "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
     "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/"
   }
@@ -345,6 +363,21 @@
 </script>
     
     <script type="module" src="index.js"></script>
+
+    <!-- n8n Chatbot Integration with Slick Dark Theme -->
+    <script type="module">
+        import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
+        
+        createChat({
+            webhookUrl: 'https://n8n.roadmap.casa/webhook/2324fc10-4f80-4631-ba6e-7775697bc69d/chat',
+            mode: 'dark',
+            showWelcomeScreen: true,
+            defaultLanguage: 'en',
+            initialMessages: [
+                '👋 Hi! I am your PM Roadmap Assistant. Ask me anything about our AI project management tools!'
+            ]
+        });
+    </script>
 <script type="module" src="/index.tsx"></script>
 </body>
 </html>

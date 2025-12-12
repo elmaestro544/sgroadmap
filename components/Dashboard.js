@@ -1,170 +1,355 @@
-
 import React, { useState, useEffect } from 'react';
-import { AppView, i18n, SERVICES } from '../constants.js';
-import SciGeniusChat from './SciGeniusChat.js';
-import ResearchCopilot from './ResearchCopilot.js';
-import DataAnalysis from './DataAnalysis.js';
-import ResearchWriter from './ResearchWriter.js';
-import PresentationGenerator from './PresentationGenerator.js';
-import PromptGenerator from './PromptGenerator.js';
-import Paraphraser from './Paraphraser.js';
-import AIHumanizer from './AIHumanizer.js';
-import ContentCreator from './ContentCreator.js';
-import InteriorDesigner from './InteriorDesigner.js';
-import Translator from './Translator.js';
-import InfographicVideoGenerator from './InfographicVideoGenerator.js';
+import { i18n, DASHBOARD_VIEWS } from '../constants.js';
+import AssistantView from './Chat.js'; 
 import AuthRequired from './AuthRequired.js';
 import UpgradeRequired from './UpgradeRequired.js';
-import { SidebarToggleIcon } from './Shared.js';
-import * as settingsService from '../services/settingsService.js';
+import PlanningView from './PlanningView.js';
+import SchedulingView from './SchedulingView.js';
+import RiskView from './RiskView.js';
+import BudgetView from './BudgetView.js';
+import StructureView from './StructureView.js';
+import KpiView from './KpiView.js';
+import SCurveView from './SCurveView.js';
+import ComprehensivePlanView from './ComprehensivePlanView.js';
+import ProjectOverview from './ProjectOverview.js'; 
+import { UserIcon, SidebarToggleIcon, Logo, Spinner, HistoryIcon, PlusIcon, ChevronRightIcon } from './Shared.js';
+import { getUserProjects, getProjectDetails, saveProject } from '../services/supabaseClient.js';
 
-// Helper component to render icons with sidebar-specific styles
-const SidebarIcon = ({ iconComponent: Icon }) => {
-    const originalElement = Icon();
-    return React.cloneElement(originalElement, {
-        className: 'h-6 w-6 text-brand-red flex-shrink-0'
-    });
+// Updated workflow order to match DASHBOARD_VIEWS in constants.js
+const WORKFLOW_ORDER = ['overview', 'consultingPlan', 'planning', 'scheduling', 'budget', 'risk', 'structure', 'kpis', 'scurve', 'assistant'];
+
+const PREREQUISITES = {
+    overview: 'objective', // Needs at least the basic project info
+    planning: 'objective', 
+    scheduling: 'plan',
+    budget: 'objective',
+    risk: 'objective',
+    structure: 'objective',
+    kpis: 'budget', 
+    scurve: 'schedule',
 };
 
-const Dashboard = ({ language, setView, currentUser, theme, activeService, needsAuth, needsUpgrade, onLoginClick }) => {
-  const t = i18n[language];
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
-  const [disabledServices, setDisabledServices] = useState(settingsService.getSettings().disabledServices);
+const PrerequisiteView = ({ missing, language, onViewChange }) => {
+    return React.createElement('div', { className: "flex flex-col items-center justify-center h-full text-center p-8" },
+        React.createElement('div', { className: "bg-dark-card-solid border border-dark-border p-8 rounded-2xl max-w-md shadow-2xl" },
+            React.createElement('h3', { className: "text-2xl font-bold text-white mb-2" }, "Step Locked"),
+            React.createElement('p', { className: "text-brand-text-light mb-6" }, 
+                missing === 'objective' 
+                ? "Please complete the 'Project Plan' step first to define your project scope and objectives." 
+                : `Please complete the '${missing}' step before accessing this section.`
+            ),
+            missing === 'objective' && React.createElement('button', {
+                onClick: () => onViewChange('consultingPlan'),
+                className: "px-6 py-2 bg-button-gradient text-white rounded-lg font-semibold hover:opacity-90"
+            }, "Go to Project Plan")
+        )
+    );
+};
 
-  useEffect(() => {
-      const handleSettingsChange = () => {
-          setDisabledServices(settingsService.getSettings().disabledServices);
-      };
-      window.addEventListener('settingsChanged', handleSettingsChange);
-      return () => window.removeEventListener('settingsChanged', handleSettingsChange);
-  }, []);
+const ProjectHeader = ({ language, objective, onReset, onNext, onPrev, activeView, onBackToProjects, projectTitle }) => {
+    const t = i18n[language];
+    return React.createElement('div', { className: 'non-printable flex-shrink-0 h-16 flex items-center justify-between px-6 border-b border-dark-border bg-dark-card/50' },
+        React.createElement('div', { className: 'flex-grow min-w-0 mr-4' },
+            // Breadcrumbs
+            React.createElement('div', { className: 'flex items-center gap-2 text-xs font-semibold text-brand-text-light mb-1' },
+                React.createElement('button', { onClick: onBackToProjects, className: 'hover:text-white transition-colors' }, "Main"),
+                React.createElement(ChevronRightIcon, { className: 'w-3 h-3' }),
+                React.createElement('button', { onClick: onBackToProjects, className: 'hover:text-white transition-colors' }, "Projects"),
+                React.createElement(ChevronRightIcon, { className: 'w-3 h-3' }),
+                React.createElement('span', { className: 'text-brand-purple-light truncate max-w-[200px]' }, projectTitle || "New Project")
+            ),
+            // Objective Preview
+            React.createElement('p', { className: 'text-white truncate font-semibold text-sm opacity-80', title: objective }, objective || "Drafting Phase")
+        ),
+        React.createElement('div', { className: 'flex items-center gap-2 flex-shrink-0' },
+            React.createElement('button', { onClick: onPrev, disabled: WORKFLOW_ORDER.indexOf(activeView) === 0, className: 'p-2 rounded-md text-brand-text-light hover:bg-white/10 hover:text-white disabled:opacity-50' }, '‹ Prev'),
+            React.createElement('button', { onClick: onNext, disabled: WORKFLOW_ORDER.indexOf(activeView) === WORKFLOW_ORDER.length - 1, className: 'px-4 py-2 text-sm font-semibold bg-button-gradient text-white rounded-md transition-opacity hover:opacity-90 disabled:opacity-50' }, 'Next ›'),
+            React.createElement('div', { className: 'w-px h-6 bg-dark-border mx-2' }),
+            React.createElement('button', { onClick: onReset, className: 'text-sm font-semibold text-red-400 hover:bg-red-500/20 px-3 py-2 rounded-md' }, 'New Project')
+        )
+    );
+};
 
-  const handleServiceClick = (serviceId) => {
-    setView(serviceId);
-    if (window.innerWidth >= 1024) {
-      setIsSidebarExpanded(false);
-    }
-  };
+const Sidebar = ({ language, activeView, setActiveView, isExpanded, setExpanded, onLogout, currentUser, projectData, onSelectProject, projects }) => {
+    const t = i18n[language];
+    const criteria = projectData?.criteria;
 
-  const renderActiveService = () => {
-    if (needsAuth) {
-        return React.createElement(AuthRequired, {
-            language: language,
-            onLoginClick: onLoginClick
-        });
-    }
-    
-    if (needsUpgrade) {
-        return React.createElement(UpgradeRequired, {
-            language: language,
-            setView: setView
-        });
-    }
+    const getButtonClasses = (isActive, isDisabled) => {
+        const baseClasses = `w-full flex items-center gap-4 text-left rounded-lg transition-all duration-200 ease-in-out relative`;
+        const paddingClass = isExpanded ? 'px-4 py-3' : 'p-3 justify-center';
+        const languageClass = language === 'ar' ? 'flex-row-reverse' : '';
 
-    const props = { language, setView, currentUser, theme };
-    switch (activeService) {
-      case AppView.SciGeniusChat: return React.createElement(SciGeniusChat, props);
-      case AppView.Research: return React.createElement(ResearchCopilot, props);
-      case AppView.DataAnalysis: return React.createElement(DataAnalysis, props);
-      case AppView.ResearchWriter: return React.createElement(ResearchWriter, props);
-      case AppView.PresentationGenerator: return React.createElement(PresentationGenerator, props);
-      case AppView.Prompt: return React.createElement(PromptGenerator, props);
-      case AppView.Paraphraser: return React.createElement(Paraphraser, props);
-      case AppView.AIHumanizer: return React.createElement(AIHumanizer, props);
-      case AppView.ContentCreator: return React.createElement(ContentCreator, props);
-      case AppView.Design: return React.createElement(InteriorDesigner, props);
-      case AppView.Translator: return React.createElement(Translator, props);
-      case AppView.InfographicVideo: return React.createElement(InfographicVideoGenerator, props);
-      default: return React.createElement(SciGeniusChat, props);
-    }
-  };
+        let stateClasses;
+        if (isDisabled) {
+            stateClasses = 'text-slate-600 cursor-not-allowed';
+        } else if (isActive) {
+            stateClasses = 'bg-brand-purple/20 text-white font-semibold border-l-4 border-brand-purple-light';
+        } else {
+            stateClasses = 'text-brand-text-light hover:bg-white/10 hover:text-white border-l-4 border-transparent';
+        }
+        
+        return {
+            className: `${baseClasses} ${paddingClass} ${languageClass} ${stateClasses}`,
+        };
+    };
 
-  const getButtonClasses = (isActive, isAvailable = true) => {
-    const baseClasses = `w-full flex items-center gap-2 p-3 text-left rounded-xl transition-all duration-200 ease-in-out`;
-    const languageClass = language === 'ar' ? 'flex-row-reverse' : '';
-    const collapsedClass = !isSidebarExpanded ? 'lg:w-14 lg:h-14 lg:justify-center lg:rounded-xl' : 'lg:w-full';
+    const formatCompactCurrency = (val, currency) => {
+        if (!val) return '';
+        return new Intl.NumberFormat('en-US', { 
+            style: 'currency', 
+            currency: currency || 'USD', 
+            notation: "compact", 
+            maximumFractionDigits: 1 
+        }).format(val);
+    };
 
-    if (isAvailable === false) {
-        return `${baseClasses} ${languageClass} ${collapsedClass} bg-slate-100/50 dark:bg-dark-bg/50 opacity-60 cursor-not-allowed border border-slate-200/80 dark:border-white/10 grayscale`;
-    }
-
-    const activeStateClasses = isActive
-        ? 'bg-brand-red/10 shadow-inner text-brand-red font-semibold border border-brand-red/20'
-        : 'bg-gradient-to-br from-slate-100 to-slate-200 dark:from-dark-card dark:to-dark-bg text-slate-700 dark:text-brand-text shadow-md dark:shadow-card border border-slate-200/80 dark:border-white/10 transform hover:-translate-y-px active:translate-y-0 active:shadow-inner';
-
-    return `${baseClasses} ${languageClass} ${activeStateClasses} ${collapsedClass}`;
-  };
-
-  return React.createElement('div', { className: 'container mx-auto p-4 md:p-8 flex flex-col lg:flex-row gap-6' },
-    // Sidebar
-    React.createElement('aside', { 
-        className: `flex-shrink-0 transition-all duration-300 ease-in-out ${isSidebarExpanded ? 'w-full lg:w-72' : 'w-full lg:w-24'}` 
+    return React.createElement('aside', {
+        className: `relative flex-shrink-0 bg-dark-card-solid flex flex-col transition-all duration-300 ease-in-out sidebar-glow border-r border-dark-border ${isExpanded ? 'w-72' : 'w-20'}`
     },
-      React.createElement('div', { 
-          className: `lg:sticky lg:top-24 bg-slate-100/50 dark:bg-dark-card/50 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 rounded-2xl p-2` 
-      },
-        // Services List
-        React.createElement('div', { className: 'space-y-2' },
-            SERVICES.map((service, index) => {
-                const isActive = activeService === service.id;
-                const isDisabled = disabledServices.includes(service.id);
-                const isAvailable = service.isAvailable !== false && !isDisabled;
-                
-                const buttonContent = React.createElement(React.Fragment, null,
-                    React.createElement(SidebarIcon, { iconComponent: service.icon }),
-                    React.createElement('span', { 
-                        className: `flex-grow whitespace-nowrap overflow-hidden transition-all duration-300 ease-in-out ${language === 'ar' ? 'text-right' : 'text-left'} ${!isSidebarExpanded ? 'lg:opacity-0 lg:max-w-0' : 'opacity-100 max-w-full lg:ml-2'}` 
-                    }, t[service.titleKey]),
-                    !isAvailable ? (
-                        React.createElement('span', { 
-                            className: `text-[10px] font-bold bg-slate-300 text-slate-600 dark:bg-slate-700 dark:text-slate-400 px-1.5 py-0.5 rounded-full transition-all duration-300 ease-in-out ${!isSidebarExpanded ? 'lg:hidden' : ''}` 
-                        }, isDisabled ? 'Disabled' : t.serviceComingSoon)
-                    ) : service.isPremium && (
-                        React.createElement('span', { 
-                            className: `text-[10px] font-bold bg-yellow-400 text-yellow-900 px-1.5 py-0.5 rounded-full transition-all duration-300 ease-in-out ${!isSidebarExpanded ? 'lg:hidden' : ''}` 
-                        }, t.premiumFeature)
-                    )
-                );
-                
-                if (index === 0) {
-                    return React.createElement('div', { key: service.id, className: "relative group" },
-                        React.createElement('button', {
-                            onClick: () => isAvailable && handleServiceClick(service.id),
-                            className: getButtonClasses(isActive, isAvailable)
-                        }, buttonContent),
-                        !isSidebarExpanded && React.createElement('div', {
-                            className: `absolute left-full ml-4 px-2 py-1 bg-slate-800 text-white text-xs rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none hidden lg:block`
-                        }, t[service.titleKey]),
-                        React.createElement('div', { 
-                            className: `hidden lg:flex items-center absolute top-1/2 -translate-y-1/2 transition-all duration-300 ease-in-out ${language === 'ar' ? 'left-2' : 'right-2'}` 
-                        },
-                            React.createElement('button', {
-                                onClick: () => setIsSidebarExpanded(!isSidebarExpanded),
-                                className: `p-2 rounded-full transition-opacity duration-200 ${isSidebarExpanded ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus:opacity-100'} hover:bg-slate-200/60 dark:hover:bg-white/10`,
-                                'aria-label': isSidebarExpanded ? "Collapse sidebar" : "Expand sidebar"
-                            },
-                                React.createElement(SidebarToggleIcon, { isExpanded: isSidebarExpanded })
-                            )
-                        )
-                    );
-                }
+        // Navigation Menu
+        React.createElement('div', { className: 'flex-grow p-4 space-y-2 overflow-y-auto mt-4' },
+            DASHBOARD_VIEWS.map(view => {
+                const Icon = view.icon;
+                const isActive = activeView === view.id;
+                const prerequisite = PREREQUISITES[view.id];
+                const isDisabled = !!prerequisite && !projectData[prerequisite];
+                const { className } = getButtonClasses(isActive, isDisabled);
 
-                return React.createElement('div', { key: service.id, className: "relative group" },
+                return React.createElement('div', { key: view.id, className: "relative group" },
                     React.createElement('button', {
-                        key: service.id,
-                        onClick: () => isAvailable && handleServiceClick(service.id),
-                        className: getButtonClasses(isActive, isAvailable)
-                    }, buttonContent),
-                    !isSidebarExpanded && React.createElement('div', {
-                        className: `absolute left-full ml-4 px-2 py-1 bg-slate-800 text-white text-xs rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none hidden lg:block`
-                    }, t[service.titleKey], !isAvailable && ` (${isDisabled ? 'Disabled' : t.serviceComingSoon})`)
+                        onClick: () => !isDisabled && setActiveView(view.id),
+                        className: className,
+                        disabled: isDisabled,
+                    },
+                        React.createElement(Icon, { className: `h-5 w-5 flex-shrink-0` }),
+                        isExpanded && React.createElement('span', { className: 'truncate text-sm' }, t[view.titleKey])
+                    ),
+                    !isExpanded && React.createElement('div', {
+                        className: `absolute top-1/2 -translate-y-1/2 left-full ml-4 px-2 py-1 bg-dark-card-solid text-white text-xs rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-xl border border-dark-border ${language === 'ar' ? 'right-full mr-4 left-auto' : ''}`
+                    }, t[view.titleKey])
                 )
             })
+        ),
+        
+        // Project Parameters Widget (Visible only when expanded and data exists)
+        isExpanded && criteria && React.createElement('div', { className: 'px-6 py-4 mx-2 mb-2 bg-dark-card border border-dark-border rounded-xl' },
+            React.createElement('h4', { className: 'text-xs font-bold text-brand-purple-light uppercase mb-3 tracking-wider border-b border-dark-border pb-2' }, "Project Parameters"),
+            React.createElement('div', { className: 'space-y-2 text-xs' },
+                React.createElement('div', { className: 'flex justify-between items-center' },
+                    React.createElement('span', { className: 'text-brand-text-light' }, "Location"),
+                    React.createElement('span', { className: 'text-white font-medium truncate max-w-[100px]', title: criteria.location }, criteria.location || '-')
+                ),
+                criteria.startDate && React.createElement('div', { className: 'flex justify-between items-center' },
+                    React.createElement('span', { className: 'text-brand-text-light' }, "Start"),
+                    React.createElement('span', { className: 'text-white font-medium' }, criteria.startDate)
+                ),
+                criteria.finishDate && React.createElement('div', { className: 'flex justify-between items-center' },
+                    React.createElement('span', { className: 'text-brand-text-light' }, "Finish"),
+                    React.createElement('span', { className: 'text-white font-medium' }, criteria.finishDate)
+                ),
+                React.createElement('div', { className: 'flex justify-between items-center' },
+                    React.createElement('span', { className: 'text-brand-text-light' }, "Duration"),
+                    React.createElement('span', { className: 'text-white font-medium' }, criteria.duration ? `${criteria.duration} Months` : '-')
+                ),
+                React.createElement('div', { className: 'pt-2 mt-2 border-t border-dark-border/50 flex justify-between items-end' },
+                    React.createElement('span', { className: 'text-brand-text-light font-semibold' }, "Total"),
+                    React.createElement('span', { className: 'text-white font-bold font-mono text-sm' }, 
+                        criteria.budget ? formatCompactCurrency(criteria.budget, criteria.currency) : 'N/A'
+                    )
+                )
+            )
+        ),
+
+        // Collapse Button
+        React.createElement('div', { className: 'p-4 border-t border-dark-border' },
+            React.createElement('button', {
+                onClick: () => setExpanded(!isExpanded),
+                'aria-label': isExpanded ? 'Collapse sidebar' : 'Expand sidebar',
+                className: `w-full flex items-center gap-4 text-left rounded-lg transition-all duration-200 ease-in-out relative text-brand-text-light hover:bg-white/10 hover:text-white ${isExpanded ? 'px-4 py-2' : 'p-2 justify-center'} ${language === 'ar' ? 'flex-row-reverse' : ''}`
+            },
+                React.createElement(SidebarToggleIcon, { isExpanded: isExpanded }),
+                isExpanded && React.createElement('span', { className: 'truncate text-sm' }, 'Collapse Sidebar')
+            )
         )
-      )
-    ),
-    React.createElement('main', { className: 'flex-grow min-w-0' },
-      renderActiveService()
+    );
+};
+
+
+const Dashboard = ({ language, setView, currentUser, onLogout, onLoginClick, initialProjectId, onBackToProjects }) => {
+  const [activeView, setActiveView] = useState('overview'); 
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+  const [projectData, setProjectData] = useState({});
+  const [currentProjectId, setCurrentProjectId] = useState(initialProjectId);
+  const [projectTitle, setProjectTitle] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  
+  const t = i18n[language];
+  
+  if (!currentUser) {
+      return React.createElement('div', {className: 'container mx-auto p-4 md:p-8'}, React.createElement(AuthRequired, { language, onLoginClick }));
+  }
+
+  // Load specific project if initialProjectId provided or changed
+  useEffect(() => {
+    const loadProject = async () => {
+        if (initialProjectId) {
+            setIsLoading(true);
+            try {
+                const data = await getProjectDetails(initialProjectId);
+                if (data) {
+                    setProjectData({
+                        objective: data.objective,
+                        plan: data.plan,
+                        schedule: data.schedule,
+                        risk: data.risks,
+                        budget: data.budget,
+                        structure: data.structure, 
+                        kpiReport: data.kpis,
+                        sCurveReport: data.s_curve,
+                        consultingPlan: data.consulting_plan,
+                        agents: data.agents, 
+                        criteria: data.consulting_plan?.meta_criteria || data.consulting_plan?.criteria || null
+                    });
+                    
+                    setCurrentProjectId(data.id);
+                    setProjectTitle(data.title);
+                    // Default to Overview for loaded projects
+                    setActiveView('overview');
+                }
+            } catch (e) {
+                setError("Failed to load project");
+            } finally {
+                setIsLoading(false);
+            }
+        } else {
+            // New Project Mode
+            setProjectData({});
+            setCurrentProjectId(null);
+            setProjectTitle("");
+            // Default to Consulting Plan for new projects to start flow
+            setActiveView('consultingPlan');
+        }
+    };
+    loadProject();
+  }, [initialProjectId]);
+
+  const handleUpdateProject = async (newData) => {
+    const updatedData = { ...projectData, ...newData };
+    setProjectData(updatedData);
+    
+    // Auto-save to Supabase
+    try {
+        if (updatedData.objective || updatedData.consultingPlan?.projectTitle) {
+            if (newData.criteria && updatedData.consultingPlan) {
+                updatedData.consultingPlan.meta_criteria = newData.criteria;
+            }
+            
+            const savedProject = await saveProject(currentProjectId, updatedData);
+            if (savedProject) {
+                setCurrentProjectId(savedProject.id);
+                setProjectTitle(savedProject.title);
+            }
+        }
+    } catch (e) {
+        console.error("Auto-save failed:", e);
+    }
+  };
+
+  const handleResetProject = () => {
+    setProjectData({});
+    setCurrentProjectId(null);
+    setProjectTitle("");
+    setActiveView('consultingPlan');
+    setError(null);
+  };
+  
+  const handleNext = () => {
+      const currentIndex = WORKFLOW_ORDER.indexOf(activeView);
+      if (currentIndex < WORKFLOW_ORDER.length - 1) {
+          setActiveView(WORKFLOW_ORDER[currentIndex + 1]);
+      }
+  };
+  
+  const handlePrev = () => {
+       const currentIndex = WORKFLOW_ORDER.indexOf(activeView);
+      if (currentIndex > 0) {
+          setActiveView(WORKFLOW_ORDER[currentIndex - 1]);
+      }
+  };
+
+  const renderActiveView = () => {
+    const commonProps = {
+        language,
+        projectData,
+        onUpdateProject: handleUpdateProject,
+        onResetProject: handleResetProject,
+        isLoading,
+        setIsLoading,
+        error,
+        setError
+    };
+    
+    // Check prerequisites
+    if (activeView !== 'assistant' && activeView !== 'consultingPlan') {
+        const prerequisite = PREREQUISITES[activeView];
+        if (prerequisite && !projectData[prerequisite]) {
+            return React.createElement(PrerequisiteView, { missing: prerequisite, language, onViewChange: setActiveView });
+        }
+    }
+
+    switch (activeView) {
+        case 'overview':
+            return React.createElement(ProjectOverview, commonProps);
+        case 'assistant':
+            return React.createElement(AssistantView, { language, currentUser });
+        case 'consultingPlan':
+            return React.createElement(ComprehensivePlanView, commonProps);
+        case 'planning':
+            return React.createElement(PlanningView, commonProps);
+        case 'scheduling':
+            return React.createElement(SchedulingView, commonProps);
+        case 'kpis':
+            return React.createElement(KpiView, commonProps);
+        case 'scurve':
+            return React.createElement(SCurveView, commonProps);
+        case 'structure':
+            return React.createElement(StructureView, commonProps);
+        case 'risk':
+            return React.createElement(RiskView, commonProps);
+        case 'budget':
+            return React.createElement(BudgetView, commonProps);
+        default:
+             return React.createElement(PlanningView, commonProps);
+    }
+  };
+
+  return React.createElement('div', { className: 'flex h-screen bg-dark-bg overflow-hidden' },
+    React.createElement(Sidebar, { 
+        language, 
+        activeView, 
+        setActiveView, 
+        isExpanded: isSidebarExpanded, 
+        setExpanded: setIsSidebarExpanded, 
+        onLogout, 
+        currentUser, 
+        projectData
+    }),
+    React.createElement('main', { className: 'flex-1 p-6 min-w-0 flex flex-col' },
+        React.createElement(ProjectHeader, { 
+            language, 
+            objective: projectData.objective || projectData.consultingPlan?.projectTitle, 
+            onReset: handleResetProject,
+            onNext: handleNext,
+            onPrev: handlePrev,
+            activeView,
+            onBackToProjects,
+            projectTitle
+        }),
+        React.createElement('div', { className: "mt-6 flex-grow bg-dark-card backdrop-blur-xl rounded-2xl glow-border overflow-hidden" },
+            error && !isLoading && React.createElement('div', { className: "bg-red-500/10 border-b border-red-500/30 text-center p-2 text-sm text-red-400 font-semibold" }, error),
+            renderActiveView()
+        )
     )
   );
 };

@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 const Privacy = ({ language }) => {
@@ -17,7 +18,7 @@ const Privacy = ({ language }) => {
             {
                 title: "1. Introduction",
                 content: [
-                    "SciGenius ('we', 'us', or 'our') is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our Service. Please read this privacy policy carefully. If you do not agree with the terms of this privacy policy, please do not access the site."
+                    "PM Roadmap ('we', 'us', or 'our') is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our Service. Please read this privacy policy carefully. If you do not agree with the terms of this privacy policy, please do not access the site."
                 ]
             },
             {
@@ -26,8 +27,8 @@ const Privacy = ({ language }) => {
                     "We may collect information about you in a variety of ways. The information we may collect on the Site includes:",
                     React.createElement('ul', { className: 'list-disc list-inside space-y-2 pl-4' },
                         React.createElement('li', null, React.createElement('strong', null, 'Personal Data: '), "Personally identifiable information, such as your name, email address, that you voluntarily give to us when you register with the Site."),
-                        React.createElement('li', null, React.createElement('strong', null, 'Usage Data: '), "Information that your browser sends whenever you visit our Service or when you access the Service by or through a mobile device. This may include your computer's IP address, browser type, browser version, the pages of our Service that you visit, the time and date of your visit, and other diagnostic data."),
-                        React.createElement('li', null, React.createElement('strong', null, 'User Content: '), "We collect the files and content you upload to our services to provide you with the features of the application, such as the Research Copilot and Interior Designer.")
+                        React.createElement('li', null, React.createElement('strong', null, 'Usage Data: '), "Information that your browser sends whenever you visit our Service. This may include your computer's IP address, browser type, browser version, the pages of our Service that you visit, the time and date of your visit, and other diagnostic data."),
+                        React.createElement('li', null, React.createElement('strong', null, 'User Content: '), "We collect the project data, files and content you upload to our services to provide you with the features of the application, such as AI Planning and Risk Analysis.")
                     )
                 ]
             },
@@ -40,7 +41,7 @@ const Privacy = ({ language }) => {
                         React.createElement('li', null, "Provide, operate, and maintain our services."),
                         React.createElement('li', null, "Improve, personalize, and expand our services."),
                         React.createElement('li', null, "Understand and analyze how you use our services."),
-                        React.createElement('li', null, "Communicate with you, either directly or through one of our partners, for customer service, to provide you with updates and other information relating to the website.")
+                        React.createElement('li', null, "Communicate with you for customer service, to provide you with updates and other information relating to the website.")
                     )
                 ]
             },
@@ -77,7 +78,7 @@ const Privacy = ({ language }) => {
             {
                 title: "9. Contact Us",
                 content: [
-                    "If you have any questions about this Privacy Policy, please contact us at roadmap.casa@gmail.com."
+                    "If you have any questions about this Privacy Policy, please contact us at info@roadmap.casa."
                 ]
             }
         ]
@@ -90,7 +91,7 @@ const Privacy = ({ language }) => {
             {
                 title: "1. مقدمة",
                 content: [
-                    "تلتزم 'عبقري العلوم' ('نحن' أو 'لنا') بحماية خصوصيتك. تشرح سياسة الخصوصية هذه كيف نجمع معلوماتك ونستخدمها ونكشف عنها ونحميها عند استخدامك لخدمتنا. يرجى قراءة سياسة الخصوصية هذه بعناية. إذا كنت لا توافق على شروط سياسة الخصوصية هذه، فيرجى عدم الوصول إلى الموقع."
+                    "تلتزم 'خارطة طريق المشروع' ('نحن' أو 'لنا') بحماية خصوصيتك. تشرح سياسة الخصوصية هذه كيف نجمع معلوماتك ونستخدمها ونكشف عنها ونحميها عند استخدامك لخدمتنا. يرجى قراءة سياسة الخصوصية هذه بعناية. إذا كنت لا توافق على شروط سياسة الخصوصية هذه، فيرجى عدم الوصول إلى الموقع."
                 ]
             },
             {
@@ -99,8 +100,8 @@ const Privacy = ({ language }) => {
                     "قد نجمع معلومات عنك بعدة طرق. تتضمن المعلومات التي قد نجمعها على الموقع ما يلي:",
                     React.createElement('ul', { className: 'list-disc list-inside space-y-2 pr-4' },
                         React.createElement('li', null, React.createElement('strong', null, 'البيانات الشخصية: '), "المعلومات التعريفية الشخصية، مثل اسمك وعنوان بريدك الإلكتروني، التي تقدمها لنا طواعية عند التسجيل في الموقع."),
-                        React.createElement('li', null, React.createElement('strong', null, 'بيانات الاستخدام: '), "المعلومات التي يرسلها متصفحك كلما قمت بزيارة خدمتنا أو عند الوصول إلى الخدمة عن طريق جهاز محمول. قد يشمل ذلك عنوان IP لجهاز الكمبيوتر الخاص بك، ونوع المتصفح، وإصدار المتصفح، وصفحات خدمتنا التي تزورها، ووقت وتاريخ زيارتك، وبيانات تشخيصية أخرى."),
-                        React.createElement('li', null, React.createElement('strong', null, 'محتوى المستخدم: '), "نجمع الملفات والمحتوى الذي تقوم بتحميله إلى خدماتنا لتزويدك بميزات التطبيق، مثل مساعد البحث ومصمم الديكور الداخلي.")
+                        React.createElement('li', null, React.createElement('strong', null, 'بيانات الاستخدام: '), "المعلومات التي يرسلها متصفحك كلما قمت بزيارة خدمتنا. قد يشمل ذلك عنوان IP لجهاز الكمبيوتر الخاص بك، ونوع المتصفح، وإصدار المتصفح، وصفحات خدمتنا التي تزورها، ووقت وتاريخ زيارتك، وبيانات تشخيصية أخرى."),
+                        React.createElement('li', null, React.createElement('strong', null, 'محتوى المستخدم: '), "نجمع بيانات المشروع والملفات والمحتوى الذي تقوم بتحميله إلى خدماتنا لتزويدك بميزات التطبيق، مثل التخطيط الذكي وتحليل المخاطر.")
                     )
                 ]
             },
@@ -113,7 +114,7 @@ const Privacy = ({ language }) => {
                         React.createElement('li', null, "توفير وتشغيل وصيانة خدماتنا."),
                         React.createElement('li', null, "تحسين وتخصيص وتوسيع خدماتنا."),
                         React.createElement('li', null, "فهم وتحليل كيفية استخدامك لخدماتنا."),
-                        React.createElement('li', null, "التواصل معك، إما مباشرة أو من خلال أحد شركائنا، لخدمة العملاء، وتزويدك بالتحديثات والمعلومات الأخرى المتعلقة بالموقع.")
+                        React.createElement('li', null, "التواصل معك لخدمة العملاء، وتزويدك بالتحديثات والمعلومات الأخرى المتعلقة بالموقع.")
                     )
                 ]
             },
@@ -150,7 +151,7 @@ const Privacy = ({ language }) => {
             {
                 title: "9. اتصل بنا",
                 content: [
-                    "إذا كان لديك أي أسئلة حول سياسة الخصوصية هذه، يرجى الاتصال بنا على roadmap.casa@gmail.com."
+                    "إذا كان لديك أي أسئلة حول سياسة الخصوصية هذه، يرجى الاتصال بنا على info@roadmap.casa."
                 ]
             }
         ]
@@ -158,7 +159,7 @@ const Privacy = ({ language }) => {
 
     const content = isArabic ? ar : en;
 
-    return React.createElement('div', { className: "max-w-4xl mx-auto py-8 px-4 prose prose-slate dark:prose-invert" },
+    return React.createElement('div', { className: "max-w-4xl mx-auto py-16 px-4" },
         React.createElement('div', { className: "text-center mb-10" },
             React.createElement('h1', { className: "text-4xl font-extrabold text-slate-900 dark:text-brand-text" }, content.title),
             React.createElement('p', { className: "text-sm text-slate-500 dark:text-brand-text-light" }, content.lastUpdated)

@@ -1,369 +1,282 @@
 
-import React, { useState, useEffect, useRef } from 'react';
-import { i18n, SERVICES } from '../constants.js';
-import { UsersIcon, ChartBarIcon, CogIcon, TrendingUpIcon, CurrencyDollarIcon, SearchIcon, GridIcon, PhoneIcon, EnvelopeIcon, UserIcon, TrashIcon } from './Shared.js';
-import * as settingsService from '../services/settingsService.js';
+import React, { useState, useEffect } from 'react';
+import { i18n } from '../constants.js';
+import { SettingsIcon, CheckIcon, LockIcon, Spinner } from './Shared.js';
+import { fetchAvailableModels } from '../services/geminiService.js';
 
-// --- Mock Data ---
-const MOCK_USERS = Array.from({ length: 25 }).map((_, i) => ({
-    id: i + 1,
-    name: `User ${i + 1}`,
-    email: `user${i + 1}@example.com`,
-    role: i === 0 ? 'Admin' : (i % 5 === 0 ? 'Premium' : 'Free'),
-    status: i % 3 === 0 ? 'Active' : 'Offline',
-    joined: new Date(Date.now() - Math.floor(Math.random() * 10000000000)).toLocaleDateString()
-}));
+const AdminDashboard = ({ language, settings, onUpdateSettings, isAuthenticated, onLogout }) => {
+    const t = i18n[language];
+    const [formData, setFormData] = useState(settings);
+    const [isSaved, setIsSaved] = useState(false);
+    const [availableModels, setAvailableModels] = useState([]);
+    const [isLoadingModels, setIsLoadingModels] = useState(false);
+    const [modelFetchError, setModelFetchError] = useState('');
 
-// --- Sub-Components defined OUTSIDE to prevent re-renders ---
-
-const StatCard = ({ title, value, icon: Icon, trend }) => (
-    React.createElement('div', { className: "bg-white dark:bg-card-gradient p-6 rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm hover:shadow-md transition-all duration-300" },
-        React.createElement('div', { className: "flex items-center justify-between mb-4" },
-            React.createElement('div', { className: "p-3 bg-brand-red/10 rounded-xl text-brand-red" }, React.createElement(Icon, { className: "h-6 w-6" })),
-            React.createElement('span', { className: `text-sm font-bold ${trend >= 0 ? 'text-green-500' : 'text-red-500'} flex items-center gap-1` },
-                trend >= 0 ? '+' : '', `${trend}%`, React.createElement(TrendingUpIcon, { className: `h-4 w-4 ${trend < 0 ? 'transform rotate-180' : ''}` })
-            )
-        ),
-        React.createElement('h3', { className: "text-slate-500 dark:text-brand-text-light text-sm font-medium uppercase tracking-wider" }, title),
-        React.createElement('p', { className: "text-2xl font-extrabold text-slate-900 dark:text-white mt-1" }, value)
-    )
-);
-
-const SidebarItem = ({ id, label, icon: Icon, activeTab, setActiveTab }) => (
-    React.createElement('button', {
-        onClick: () => setActiveTab(id),
-        className: `w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === id ? 'bg-brand-red text-white shadow-lg shadow-brand-red/30' : 'text-slate-600 dark:text-brand-text-light hover:bg-slate-100 dark:hover:bg-white/5'}`
-    },
-        React.createElement(Icon, { className: "h-5 w-5" }),
-        React.createElement('span', { className: "font-semibold" }, label)
-    )
-);
-
-const OverviewTab = ({ t, theme }) => {
-    const chartRef = useRef(null);
-    const chartInstance = useRef(null);
-
+    // Update local state if props change
     useEffect(() => {
-        if (chartRef.current && window.Chart) {
-            if (chartInstance.current) {
-                chartInstance.current.destroy();
-            }
+        setFormData(settings);
+    }, [settings]);
 
-            const ctx = chartRef.current.getContext('2d');
-            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-            gradient.addColorStop(0, 'rgba(239, 68, 68, 0.5)'); // brand-red
-            gradient.addColorStop(1, 'rgba(239, 68, 68, 0.0)');
+    // Safety check: In case user navigates here without auth
+    if (!isAuthenticated) {
+         return React.createElement('div', { className: "flex flex-col items-center justify-center h-full min-h-[60vh] animate-fade-in-up" },
+            React.createElement('div', { className: "bg-dark-card p-8 rounded-2xl border border-dark-border shadow-xl w-full max-w-md text-center glow-border" },
+                React.createElement(LockIcon, { className: "w-12 h-12 text-red-400 mx-auto mb-4" }),
+                React.createElement('h2', { className: "text-2xl font-bold text-white mb-2" }, "Access Denied"),
+                React.createElement('p', { className: "text-brand-text-light" }, "You must authenticate as an admin to view this page.")
+            )
+        );
+    }
 
-            chartInstance.current = new window.Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                    datasets: [{
-                        label: 'New Users',
-                        data: [65, 59, 80, 81, 56, 120],
-                        borderColor: '#ef4444',
-                        backgroundColor: gradient,
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            mode: 'index',
-                            intersect: false,
-                        }
-                    },
-                    scales: {
-                        x: { 
-                            grid: { display: false, drawBorder: false },
-                            ticks: { color: theme === 'dark' ? '#94a3b8' : '#64748b' }
-                        },
-                        y: { 
-                            grid: { color: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', borderDash: [5, 5] },
-                            ticks: { color: theme === 'dark' ? '#94a3b8' : '#64748b' }
-                        }
-                    }
-                }
-            });
+    const handleChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }));
+    };
+
+    const handleIntensityChange = (e) => {
+        const value = parseFloat(e.target.value);
+        setFormData(prev => ({
+            ...prev,
+            bgIntensity: value
+        }));
+    };
+
+    const handleFetchModels = async () => {
+        if (!formData.aiApiKey && formData.aiProvider !== 'google') {
+            setModelFetchError('API Key is required to fetch models for this provider.');
+            return;
         }
-        return () => {
-            if (chartInstance.current) {
-                chartInstance.current.destroy();
+        
+        setIsLoadingModels(true);
+        setModelFetchError('');
+        try {
+            // If google, we might rely on env key if local is empty
+            const keyToUse = formData.aiApiKey || window.process?.env?.API_KEY;
+            const models = await fetchAvailableModels(formData.aiProvider, keyToUse);
+            setAvailableModels(models);
+            
+            // If current model isn't in list, select first one
+            if (models.length > 0 && !models.find(m => m.id === formData.aiModel)) {
+                setFormData(prev => ({ ...prev, aiModel: models[0].id }));
             }
-        };
-    }, [theme]);
+        } catch (err) {
+            setModelFetchError(err.message || 'Failed to fetch models');
+            // Fallback defaults if fetch fails
+            if (formData.aiProvider === 'openai') setAvailableModels([{id: 'gpt-4o', name: 'GPT-4o'}, {id: 'gpt-3.5-turbo', name: 'GPT-3.5 Turbo'}]);
+            if (formData.aiProvider === 'perplexity') setAvailableModels([{id: 'sonar-pro', name: 'Sonar Pro'}, {id: 'sonar', name: 'Sonar'}]);
+        } finally {
+            setIsLoadingModels(false);
+        }
+    };
 
-    return React.createElement('div', { className: "space-y-6" },
-        React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-3 gap-6" },
-            React.createElement(StatCard, { title: t.adminStatsTotalUsers, value: "1,234", icon: UsersIcon, trend: 12 }),
-            React.createElement(StatCard, { title: t.adminStatsRevenue, value: "$45,678", icon: CurrencyDollarIcon, trend: 8 }),
-            React.createElement(StatCard, { title: t.adminStatsActiveSessions, value: "567", icon: ChartBarIcon, trend: -2 })
-        ),
-        React.createElement('div', { className: "bg-white dark:bg-card-gradient p-6 rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm" },
-            React.createElement('h3', { className: "text-lg font-bold text-slate-900 dark:text-white mb-6" }, "User Growth"),
-            React.createElement('div', { className: "relative h-80 w-full" },
-                React.createElement('canvas', { ref: chartRef })
-            )
-        )
-    );
-};
+    const handleSave = (e) => {
+        e.preventDefault();
+        onUpdateSettings(formData);
+        setIsSaved(true);
+        setTimeout(() => setIsSaved(false), 2000);
+    };
 
-const ServicesTab = ({ t, siteSettings, toggleService }) => (
-    React.createElement('div', { className: "bg-white dark:bg-card-gradient rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm overflow-hidden" },
-        React.createElement('div', { className: "p-6 border-b border-slate-200 dark:border-white/10" },
-            React.createElement('h3', { className: "text-lg font-bold text-slate-900 dark:text-white" }, "Services Management"),
-            React.createElement('p', { className: "text-sm text-slate-500 mt-1" }, "Activate or deactivate services for all users.")
-        ),
-        React.createElement('div', { className: "p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" },
-            SERVICES.map(service => {
-                const isEnabled = !siteSettings.disabledServices.includes(service.id);
-                const ServiceIcon = service.icon;
-                return React.createElement('div', { key: service.id, className: "flex items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-black/20 border border-slate-100 dark:border-white/5" },
-                    React.createElement('div', { className: "flex items-center gap-3" },
-                        React.createElement('div', { className: `p-2 rounded-lg ${isEnabled ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'bg-slate-200 dark:bg-slate-800 text-slate-500'}` },
-                            React.createElement(ServiceIcon, { className: "h-6 w-6" })
-                        ),
-                        React.createElement('span', { className: "font-semibold text-slate-700 dark:text-brand-text" }, t[service.titleKey])
-                    ),
-                    React.createElement('button', {
-                        onClick: () => toggleService(service.id),
-                        className: `relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${isEnabled ? 'bg-green-500' : 'bg-slate-300 dark:bg-slate-600'}`
-                    },
-                        React.createElement('span', {
-                            className: `${isEnabled ? 'translate-x-6' : 'translate-x-1'} inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200`
-                        })
-                    )
-                );
-            })
-        )
-    )
-);
-
-const UsersTab = ({ t, users }) => {
-    const [searchTerm, setSearchTerm] = useState('');
-    
-    const filteredUsers = users.filter(u => 
-        u.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        u.email.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    return React.createElement('div', { className: "bg-white dark:bg-card-gradient rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm overflow-hidden" },
-        React.createElement('div', { className: "p-6 border-b border-slate-200 dark:border-white/10 flex flex-col sm:flex-row justify-between items-center gap-4" },
-            React.createElement('h3', { className: "text-lg font-bold text-slate-900 dark:text-white" }, t.adminUsers),
-            React.createElement('div', { className: "relative w-full sm:w-64" },
-                React.createElement(SearchIcon, { className: "absolute top-1/2 left-3 -translate-y-1/2 h-5 w-5 text-slate-400" }),
-                React.createElement('input', {
-                    type: "text",
-                    placeholder: t.adminUserSearch,
-                    value: searchTerm,
-                    onChange: (e) => setSearchTerm(e.target.value),
-                    className: "w-full pl-10 pr-4 py-2 bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-red/50 text-sm"
-                })
-            )
-        ),
-        React.createElement('div', { className: "overflow-x-auto" },
-            React.createElement('table', { className: "w-full text-sm text-left" },
-                React.createElement('thead', { className: "bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-brand-text-light uppercase text-xs" },
-                    React.createElement('tr', null,
-                        React.createElement('th', { className: "px-6 py-3 font-medium" }, t.adminTableName),
-                        React.createElement('th', { className: "px-6 py-3 font-medium hidden md:table-cell" }, t.adminTableEmail),
-                        React.createElement('th', { className: "px-6 py-3 font-medium" }, t.adminTableRole),
-                        React.createElement('th', { className: "px-6 py-3 font-medium" }, t.adminTableStatus),
-                        React.createElement('th', { className: "px-6 py-3 font-medium text-right" }, t.adminTableActions)
-                    )
+    return React.createElement('div', { className: "container mx-auto px-6 py-12 max-w-4xl animate-fade-in-up" },
+        React.createElement('div', { className: 'flex items-center justify-between mb-8' },
+            React.createElement('div', { className: 'flex items-center gap-4' },
+                React.createElement('div', { className: 'p-3 bg-brand-purple/10 rounded-full text-brand-purple-light border border-brand-purple/20' },
+                    React.createElement(SettingsIcon, { className: 'w-8 h-8' })
                 ),
-                React.createElement('tbody', { className: "divide-y divide-slate-200 dark:divide-white/10" },
-                    filteredUsers.map(user => (
-                        React.createElement('tr', { key: user.id, className: "hover:bg-slate-50 dark:hover:bg-white/5 transition-colors" },
-                            React.createElement('td', { className: "px-6 py-4 font-medium text-slate-900 dark:text-white flex items-center gap-3" },
-                                React.createElement('div', { className: "h-8 w-8 rounded-full bg-gradient-to-tr from-brand-red to-brand-blue flex items-center justify-center text-white font-bold text-xs" }, user.name.charAt(0)),
-                                user.name
-                            ),
-                            React.createElement('td', { className: "px-6 py-4 text-slate-500 dark:text-brand-text-light hidden md:table-cell" }, user.email),
-                            React.createElement('td', { className: "px-6 py-4" },
-                                React.createElement('span', { className: `px-2 py-1 rounded-full text-xs font-bold ${user.role === 'Admin' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' : (user.role === 'Premium' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300')}` }, user.role)
-                            ),
-                            React.createElement('td', { className: "px-6 py-4" },
-                                React.createElement('span', { className: `flex items-center gap-2 ${user.status === 'Active' ? 'text-green-600 dark:text-green-400' : 'text-slate-400'}` },
-                                    React.createElement('span', { className: `h-2 w-2 rounded-full ${user.status === 'Active' ? 'bg-green-500 animate-pulse' : 'bg-slate-400'}` }),
-                                    user.status
+                React.createElement('div', null,
+                    React.createElement('h1', { className: "text-3xl font-bold text-white" }, "Platform Administration"),
+                    React.createElement('p', { className: "text-brand-text-light" }, "Manage global application visuals, contact details, and AI settings.")
+                )
+            ),
+            React.createElement('button', {
+                onClick: onLogout,
+                className: "flex items-center gap-2 px-4 py-2 rounded-lg bg-dark-card border border-dark-border text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors"
+            },
+                React.createElement(LockIcon, { className: "w-4 h-4" }),
+                React.createElement('span', { className: "font-semibold text-sm" }, "Lock Dashboard")
+            )
+        ),
+
+        React.createElement('div', { className: "bg-dark-card border border-dark-border rounded-xl p-8 shadow-xl relative overflow-hidden" },
+            // Background glow effect for the card
+            React.createElement('div', { className: 'absolute top-0 right-0 w-64 h-64 bg-brand-purple/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none' }),
+            
+            React.createElement('form', { onSubmit: handleSave, className: "space-y-8 relative z-10" },
+                
+                // AI Configuration Section
+                React.createElement('div', null,
+                    React.createElement('h3', { className: "text-xl font-semibold text-white mb-6 border-b border-dark-border pb-3 flex items-center gap-2" }, 
+                        "🤖 AI Configuration"
+                    ),
+                    React.createElement('div', { className: "grid grid-cols-1 gap-6" },
+                        React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6'},
+                            React.createElement('div', null,
+                                React.createElement('label', { htmlFor: "aiProvider", className: "block text-sm font-medium text-brand-text-light mb-1" }, "AI Provider"),
+                                React.createElement('select', {
+                                    id: "aiProvider",
+                                    name: "aiProvider",
+                                    value: formData.aiProvider || 'google',
+                                    onChange: handleChange,
+                                    className: "w-full p-3 bg-dark-bg border border-dark-border rounded-lg text-white focus:ring-2 focus:ring-brand-purple focus:outline-none"
+                                },
+                                    React.createElement('option', { value: "google" }, "Google Gemini"),
+                                    React.createElement('option', { value: "openai" }, "OpenAI"),
+                                    React.createElement('option', { value: "openrouter" }, "OpenRouter"),
+                                    React.createElement('option', { value: "perplexity" }, "Perplexity")
                                 )
                             ),
-                            React.createElement('td', { className: "px-6 py-4 text-right" },
-                                React.createElement('button', { className: "text-slate-400 hover:text-brand-red transition-colors" }, "Edit")
+                            React.createElement('div', null,
+                                React.createElement('label', { htmlFor: "aiApiKey", className: "block text-sm font-medium text-brand-text-light mb-1" }, "API Key"),
+                                React.createElement('input', {
+                                    type: "password",
+                                    id: "aiApiKey",
+                                    name: "aiApiKey",
+                                    value: formData.aiApiKey || '',
+                                    onChange: handleChange,
+                                    placeholder: `Enter ${formData.aiProvider} API key...`,
+                                    className: "w-full p-3 bg-dark-bg border border-dark-border rounded-lg text-white focus:ring-2 focus:ring-brand-purple focus:outline-none transition-all hover:border-brand-purple/50"
+                                })
                             )
-                        )
-                    ))
-                )
-            )
-        )
-    );
-};
-
-const SettingsTab = ({ siteSettings, handleSettingChange, setSiteSettings, saveSettings }) => {
-    
-    const updateTeamMember = (index, field, value) => {
-        const updatedMembers = [...(siteSettings.teamMembers || [])];
-        updatedMembers[index] = { ...updatedMembers[index], [field]: value };
-        setSiteSettings({ ...siteSettings, teamMembers: updatedMembers });
-    };
-
-    const addTeamMember = () => {
-        const newMember = { name: 'New Member', role: 'Role', img: 'https://i.pravatar.cc/150' };
-        setSiteSettings({ ...siteSettings, teamMembers: [...(siteSettings.teamMembers || []), newMember] });
-    };
-
-    const removeTeamMember = (index) => {
-        const updatedMembers = siteSettings.teamMembers.filter((_, i) => i !== index);
-        setSiteSettings({ ...siteSettings, teamMembers: updatedMembers });
-    };
-
-    return React.createElement('div', { className: "max-w-3xl mx-auto space-y-8" },
-        React.createElement('div', { className: "bg-white dark:bg-card-gradient p-8 rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm" },
-            React.createElement('h3', { className: "text-lg font-bold text-slate-900 dark:text-white mb-4" }, "General Settings"),
-            React.createElement('div', { className: "space-y-4" },
-                React.createElement('div', null,
-                    React.createElement('label', { className: "block text-sm font-medium text-slate-700 dark:text-brand-text-light mb-1" }, "Site Name"),
-                    React.createElement('input', { 
-                        type: "text", 
-                        name: "siteName",
-                        value: siteSettings.siteName,
-                        onChange: handleSettingChange,
-                        className: "w-full p-2 bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg focus:ring-2 focus:ring-brand-blue focus:outline-none" 
-                    })
-                ),
-                React.createElement('div', null,
-                    React.createElement('label', { className: "block text-sm font-medium text-slate-700 dark:text-brand-text-light mb-1" }, "Contact Email"),
-                    React.createElement('div', { className: "relative" },
-                        React.createElement(EnvelopeIcon, { className: "absolute top-1/2 left-3 -translate-y-1/2 h-5 w-5 text-slate-400" }),
-                        React.createElement('input', { 
-                            type: "email", 
-                            name: "contactEmail",
-                            value: siteSettings.contactEmail,
-                            onChange: handleSettingChange,
-                            className: "w-full pl-10 p-2 bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg focus:ring-2 focus:ring-brand-blue focus:outline-none" 
-                        })
-                    )
-                ),
-                React.createElement('div', null,
-                    React.createElement('label', { className: "block text-sm font-medium text-slate-700 dark:text-brand-text-light mb-1" }, "Contact Phone"),
-                    React.createElement('div', { className: "relative" },
-                        React.createElement(PhoneIcon, { className: "absolute top-1/2 left-3 -translate-y-1/2 h-5 w-5 text-slate-400" }),
-                        React.createElement('input', { 
-                            type: "text", 
-                            name: "contactPhone",
-                            value: siteSettings.contactPhone,
-                            onChange: handleSettingChange,
-                            className: "w-full pl-10 p-2 bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg focus:ring-2 focus:ring-brand-blue focus:outline-none" 
-                        })
-                    )
-                ),
-                React.createElement('div', null,
-                    React.createElement('label', { className: "block text-sm font-medium text-slate-700 dark:text-brand-text-light mb-1" }, "Chat Avatar URL"),
-                    React.createElement('div', { className: "relative" },
-                        React.createElement(UserIcon, { className: "absolute top-1/2 left-3 -translate-y-1/2 h-5 w-5 text-slate-400" }),
-                        React.createElement('input', { 
-                            type: "text", 
-                            name: "chatAvatarUrl",
-                            value: siteSettings.chatAvatarUrl || '',
-                            onChange: handleSettingChange,
-                            placeholder: "https://...",
-                            className: "w-full pl-10 p-2 bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-lg focus:ring-2 focus:ring-brand-blue focus:outline-none" 
-                        })
-                    )
-                )
-            )
-        ),
-        React.createElement('div', { className: "bg-white dark:bg-card-gradient p-8 rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm" },
-            React.createElement('div', { className: "flex justify-between items-center mb-6" },
-                React.createElement('h3', { className: "text-lg font-bold text-slate-900 dark:text-white" }, "Team Members"),
-                React.createElement('button', { onClick: addTeamMember, className: "text-sm bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-brand-red font-semibold py-1.5 px-3 rounded-lg transition-colors" }, "+ Add Member")
-            ),
-            React.createElement('div', { className: "space-y-6" },
-                (siteSettings.teamMembers || []).map((member, index) => 
-                    React.createElement('div', { key: index, className: "flex flex-col md:flex-row gap-4 p-4 bg-slate-50 dark:bg-black/20 rounded-xl border border-slate-100 dark:border-white/5 relative" },
-                        React.createElement('button', { onClick: () => removeTeamMember(index), className: "absolute top-2 right-2 p-1 text-slate-400 hover:text-brand-red transition-colors" }, React.createElement(TrashIcon, {className: "h-4 w-4"})),
-                        React.createElement('div', { className: "flex-shrink-0 w-20 h-20 bg-slate-200 dark:bg-slate-800 rounded-lg overflow-hidden mx-auto md:mx-0" },
-                            member.img ? React.createElement('img', { src: member.img, alt: member.name, className: "w-full h-full object-cover" }) : React.createElement(UserIcon, { className: "w-full h-full p-4 text-slate-400" })
                         ),
-                        React.createElement('div', { className: "flex-grow grid grid-cols-1 md:grid-cols-2 gap-4" },
-                            React.createElement('div', null,
-                                React.createElement('label', { className: "block text-xs font-medium text-slate-500 mb-1" }, "Name"),
-                                React.createElement('input', { type: "text", value: member.name, onChange: (e) => updateTeamMember(index, 'name', e.target.value), className: "w-full p-2 text-sm bg-white dark:bg-dark-bg border border-slate-200 dark:border-white/10 rounded-lg focus:outline-none focus:border-brand-blue" })
+                        
+                        React.createElement('div', null,
+                             React.createElement('div', { className: 'flex justify-between items-end mb-1' },
+                                React.createElement('label', { htmlFor: "aiModel", className: "block text-sm font-medium text-brand-text-light" }, "Model Selection"),
+                                React.createElement('button', {
+                                    type: 'button',
+                                    onClick: handleFetchModels,
+                                    disabled: isLoadingModels,
+                                    className: "text-xs text-brand-purple-light hover:text-white underline disabled:opacity-50"
+                                }, isLoadingModels ? "Fetching..." : "Refresh Models List")
+                             ),
+                             React.createElement('div', { className: 'flex gap-2' },
+                                React.createElement('select', {
+                                    id: "aiModel",
+                                    name: "aiModel",
+                                    value: formData.aiModel || 'gemini-2.5-flash',
+                                    onChange: handleChange,
+                                    className: "w-full p-3 bg-dark-bg border border-dark-border rounded-lg text-white focus:ring-2 focus:ring-brand-purple focus:outline-none"
+                                },
+                                    // Default/Fallback options if fetch hasn't happened
+                                    availableModels.length > 0 
+                                        ? availableModels.map(m => React.createElement('option', { key: m.id, value: m.id }, m.name || m.id))
+                                        : (
+                                            formData.aiProvider === 'google' ? [
+                                                React.createElement('option', { key: "gemini-2.5-flash", value: "gemini-2.5-flash" }, "Gemini 2.5 Flash"),
+                                                React.createElement('option', { key: "gemini-1.5-pro", value: "gemini-1.5-pro" }, "Gemini 1.5 Pro")
+                                            ] : [
+                                                 React.createElement('option', { key: "default", value: formData.aiModel }, formData.aiModel || "Default Model")
+                                            ]
+                                        )
+                                )
+                             ),
+                             modelFetchError && React.createElement('p', { className: "text-xs text-red-400 mt-1" }, modelFetchError)
+                        )
+                    )
+                ),
+
+                // Visual Settings Section
+                React.createElement('div', null,
+                    React.createElement('h3', { className: "text-xl font-semibold text-white mb-6 border-b border-dark-border pb-3 flex items-center gap-2" }, 
+                        "✨ Visual Effects"
+                    ),
+                    
+                    React.createElement('div', { className: "grid gap-8" },
+                        // Glow Intensity Slider
+                        React.createElement('div', { className: "bg-dark-bg/30 p-6 rounded-lg border border-dark-border/50" },
+                            React.createElement('div', { className: 'flex justify-between items-center mb-4' },
+                                React.createElement('div', null,
+                                    React.createElement('label', { htmlFor: "bgIntensity", className: "text-base font-medium text-white block" }, "Hero Background Glow Intensity"),
+                                    React.createElement('p', { className: 'text-xs text-brand-text-light mt-1' }, "Controls the opacity and brightness of the gradient lights on the Home page.")
+                                ),
+                                React.createElement('div', { className: "bg-dark-card px-3 py-1 rounded border border-dark-border text-brand-purple-light font-bold font-mono" }, 
+                                    formData.bgIntensity
+                                )
                             ),
-                            React.createElement('div', null,
-                                React.createElement('label', { className: "block text-xs font-medium text-slate-500 mb-1" }, "Role"),
-                                React.createElement('input', { type: "text", value: member.role, onChange: (e) => updateTeamMember(index, 'role', e.target.value), className: "w-full p-2 text-sm bg-white dark:bg-dark-bg border border-slate-200 dark:border-white/10 rounded-lg focus:outline-none focus:border-brand-blue" })
-                            ),
-                            React.createElement('div', { className: "md:col-span-2" },
-                                React.createElement('label', { className: "block text-xs font-medium text-slate-500 mb-1" }, "Image URL"),
-                                React.createElement('input', { type: "text", value: member.img, onChange: (e) => updateTeamMember(index, 'img', e.target.value), className: "w-full p-2 text-sm bg-white dark:bg-dark-bg border border-slate-200 dark:border-white/10 rounded-lg focus:outline-none focus:border-brand-blue" })
+                            React.createElement('input', {
+                                type: "range",
+                                id: "bgIntensity",
+                                name: "bgIntensity",
+                                min: "0",
+                                max: "1",
+                                step: "0.1",
+                                value: formData.bgIntensity,
+                                onChange: handleIntensityChange,
+                                className: "w-full h-2 bg-dark-bg rounded-lg appearance-none cursor-pointer accent-brand-purple"
+                            }),
+                            React.createElement('div', { className: 'flex justify-between text-xs text-slate-500 mt-2' },
+                                React.createElement('span', null, "Subtle"),
+                                React.createElement('span', null, "Vibrant")
+                            )
+                        ),
+
+                        // Show Cityscape Toggle
+                        React.createElement('div', { className: "flex items-center justify-between p-6 bg-dark-bg/30 rounded-lg border border-dark-border/50" },
+                             React.createElement('div', null,
+                                React.createElement('span', { className: "text-white font-medium block text-base" }, "Show Cityscape Animation"),
+                                React.createElement('span', { className: "text-sm text-brand-text-light block mt-1" }, "Toggle the animated vector city background on the home hero section.")
+                             ),
+                             React.createElement('label', { className: "relative inline-flex items-center cursor-pointer" },
+                                React.createElement('input', {
+                                    type: "checkbox",
+                                    name: "showCityscape",
+                                    checked: formData.showCityscape,
+                                    onChange: handleChange,
+                                    className: "sr-only peer"
+                                }),
+                                React.createElement('div', { className: "w-14 h-7 bg-slate-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-brand-purple rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-brand-purple" })
                             )
                         )
                     )
+                ),
+
+                // Contact Info Settings Section
+                React.createElement('div', null,
+                    React.createElement('h3', { className: "text-xl font-semibold text-white mb-6 border-b border-dark-border pb-3 flex items-center gap-2" }, 
+                        "📧 Contact Information"
+                    ),
+                    React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 gap-6" },
+                        React.createElement('div', null,
+                            React.createElement('label', { htmlFor: "contactEmail", className: "block text-sm font-medium text-brand-text-light mb-1" }, "Contact Email"),
+                            React.createElement('input', {
+                                type: "email",
+                                id: "contactEmail",
+                                name: "contactEmail",
+                                value: formData.contactEmail,
+                                onChange: handleChange,
+                                className: "w-full p-3 bg-dark-bg border border-dark-border rounded-lg text-white focus:ring-2 focus:ring-brand-purple focus:outline-none transition-all hover:border-brand-purple/50"
+                            })
+                        ),
+                        React.createElement('div', null,
+                            React.createElement('label', { htmlFor: "contactPhone", className: "block text-sm font-medium text-brand-text-light mb-1" }, "Phone / Footer Text"),
+                            React.createElement('input', {
+                                type: "text",
+                                id: "contactPhone",
+                                name: "contactPhone",
+                                value: formData.contactPhone,
+                                onChange: handleChange,
+                                className: "w-full p-3 bg-dark-bg border border-dark-border rounded-lg text-white focus:ring-2 focus:ring-brand-purple focus:outline-none transition-all hover:border-brand-purple/50"
+                            })
+                        )
+                    )
+                ),
+
+                // Save Button Area
+                React.createElement('div', { className: 'pt-6 border-t border-dark-border flex items-center justify-end gap-4' },
+                     isSaved && React.createElement('span', { className: "text-green-400 flex items-center gap-2 animate-fade-in-up font-medium bg-green-500/10 px-3 py-1 rounded-full" },
+                        React.createElement(CheckIcon, { className: "w-4 h-4" }),
+                        "Settings saved!"
+                    ),
+                    React.createElement('button', {
+                        type: "submit",
+                        className: "px-8 py-3 bg-button-gradient text-white font-bold rounded-lg shadow-lg shadow-brand-purple/20 hover:opacity-90 hover:shadow-brand-purple/40 transition-all flex items-center justify-center gap-2"
+                    },
+                        "Save Changes"
+                    )
                 )
             )
-        ),
-        React.createElement('button', {
-            onClick: saveSettings,
-            className: "w-full bg-brand-red hover:bg-red-500 text-white font-bold py-3 rounded-xl transition-colors shadow-lg shadow-brand-red/20"
-        }, "Save All Changes")
-    );
-};
-
-const AdminDashboard = ({ language, theme }) => {
-    const t = i18n[language];
-    const [activeTab, setActiveTab] = useState('overview');
-    const [users, setUsers] = useState(MOCK_USERS);
-    const [siteSettings, setSiteSettings] = useState(settingsService.getSettings());
-
-    const handleSettingChange = (e) => {
-        const { name, value } = e.target;
-        const newSettings = { ...siteSettings, [name]: value };
-        setSiteSettings(newSettings);
-    };
-
-    const saveSettings = () => {
-        settingsService.saveSettings(siteSettings);
-        alert("Settings saved successfully!");
-    };
-
-    const toggleService = (serviceId) => {
-        const isDisabled = siteSettings.disabledServices.includes(serviceId);
-        let newDisabledServices;
-        if (isDisabled) {
-            newDisabledServices = siteSettings.disabledServices.filter(id => id !== serviceId);
-        } else {
-            newDisabledServices = [...siteSettings.disabledServices, serviceId];
-        }
-        const newSettings = { ...siteSettings, disabledServices: newDisabledServices };
-        setSiteSettings(newSettings);
-        settingsService.saveSettings(newSettings);
-    };
-
-    return React.createElement('div', { className: "container mx-auto p-6 flex flex-col lg:flex-row gap-8 min-h-screen" },
-        // Sidebar
-        React.createElement('div', { className: "lg:w-64 flex-shrink-0 space-y-2" },
-            React.createElement('div', { className: "mb-8 px-4" },
-                React.createElement('h2', { className: "text-2xl font-bold text-slate-900 dark:text-white" }, t.adminTitle),
-                React.createElement('p', { className: "text-sm text-slate-500" }, "v1.2.0")
-            ),
-            React.createElement(SidebarItem, { id: 'overview', label: t.adminOverview, icon: ChartBarIcon, activeTab, setActiveTab }),
-            React.createElement(SidebarItem, { id: 'services', label: "Services", icon: GridIcon, activeTab, setActiveTab }),
-            React.createElement(SidebarItem, { id: 'users', label: t.adminUsers, icon: UsersIcon, activeTab, setActiveTab }),
-            React.createElement(SidebarItem, { id: 'settings', label: t.adminSettings, icon: CogIcon, activeTab, setActiveTab })
-        ),
-        
-        // Content Area
-        React.createElement('div', { className: "flex-grow" },
-            activeTab === 'overview' && React.createElement(OverviewTab, { t, theme }),
-            activeTab === 'services' && React.createElement(ServicesTab, { t, siteSettings, toggleService }),
-            activeTab === 'users' && React.createElement(UsersTab, { t, users }),
-            activeTab === 'settings' && React.createElement(SettingsTab, { siteSettings, handleSettingChange, setSiteSettings, saveSettings })
         )
     );
 };

@@ -2,42 +2,30 @@ import React from 'react';
 
 export const Spinner = ({ size = '8' }) => (
   React.createElement('div', {
-    className: `animate-spin rounded-full h-${size} w-${size} border-b-2 border-t-2 border-brand-red`
+    className: `animate-spin rounded-full h-${size} w-${size} border-b-2 border-t-2 border-brand-purple-light`
   })
 );
 
-export const UploadIcon = ({ className = "h-12 w-12 text-slate-400 dark:text-brand-text-light" }) => (
+export const SendIcon = ({className = "h-5 w-5 text-white"}) => (
+    React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
+        React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 19l9 2-9-18-9 18 9-2zm0 0v-8" })
+    )
+);
+
+export const MicrophoneIcon = ({ className = "h-6 w-6" }) => (
+    React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
+        React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" })
+    )
+);
+
+export const UserIcon = ({ className = "h-6 w-6" }) => (
     React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className: className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
-        React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" })
-    )
-);
-
-export const SendIcon = () => (
-    React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className: "h-6 w-6", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
-        React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M13 5l7 7-7 7M5 12h14" })
-    )
-);
-
-export const CopyIcon = ({ className = "h-5 w-5 mr-2" }) => (
-    React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className: className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
-        React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" })
-    )
-);
-
-export const DownloadIcon = () => (
-    React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className: "h-5 w-5 mr-2", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
-        React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" })
-    )
-);
-
-export const UserIcon = () => (
-    React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className: "h-6 w-6", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
         React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" })
     )
 );
 
-export const CloseIcon = () => (
-    React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className: "h-6 w-6", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
+export const CloseIcon = ({ className = "h-6 w-6" }) => (
+    React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className: className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
         React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M6 18L18 6M6 6l12 12" })
     )
 );
@@ -45,18 +33,6 @@ export const CloseIcon = () => (
 export const GoogleIcon = () => (
     React.createElement('svg', { className: "w-5 h-5", "aria-hidden": "true", focusable: "false", "data-prefix": "fab", "data-icon": "google", role: "img", xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 488 512" },
         React.createElement('path', { fill: "currentColor", d: "M488 261.8C488 403.3 381.5 512 244 512 111.8 512 0 398.9 0 261.8 0 124.9 111.8 12.8 244 12.8c70.3 0 129.5 27.8 175.2 72.9l-68.5 68.5c-24.1-22.9-57-37.1-97.2-37.1-72.5 0-132.3 58.9-132.3 131.5s59.8 131.5 132.3 131.5c83.8 0 116.3-59.5 121.2-88.5H244v-83.8h236.1c2.4 12.8 3.9 26.6 3.9 41.5z" })
-    )
-);
-
-export const GithubIcon = () => (
-    React.createElement('svg', { className: "w-6 h-6", fill: "currentColor", viewBox: "0 0 24 24", "aria-hidden": "true" },
-        React.createElement('path', { fillRule: "evenodd", d: "M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.168 6.839 9.49.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.031-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.03 1.595 1.03 2.688 0 3.848-2.338 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.001 10.001 0 0022 12c0-5.523-4.477-10-10-10z", clipRule: "evenodd" })
-    )
-);
-
-export const LinkedinIcon = () => (
-    React.createElement('svg', { className: "w-6 h-6", fill: "currentColor", viewBox: "0 0 24 24", "aria-hidden": "true" },
-        React.createElement('path', { d: "M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" })
     )
 );
 
@@ -72,51 +48,26 @@ export const TelegramIcon = () => (
     )
 );
 
-export const EnvelopeIcon = ({ className = "w-6 h-6" }) => (
+export const LinkedinIcon = () => (
+    React.createElement('svg', { className: "w-6 h-6", fill: "currentColor", viewBox: "0 0 24 24", "aria-hidden": "true" },
+        React.createElement('path', { d: "M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" })
+    )
+);
+
+export const MenuIcon = ({ className = 'w-6 h-6' }) => (
     React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className: className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
-        React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" })
+      React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M4 6h16M4 12h16M4 18h16" })
     )
 );
 
-export const PhoneIcon = ({ className = "w-6 h-6" }) => (
+export const HistoryIcon = ({ className = "h-5 w-5" }) => (
     React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className: className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
-        React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" })
+        React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" })
     )
 );
 
-export const PaperAirplaneIcon = ({ className = "w-5 h-5" }) => (
-    React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className: className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
-      React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 19l9 2-9-18-9 18 9-2zm0 0v-8" })
-    )
-);
-
-export const SwapIcon = () => (
-    React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className: "h-5 w-5", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
-        React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" })
-    )
-);
-
-export const SpeakerIcon = ({ className = "h-5 w-5" }) => (
-    React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className: className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
-        React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" })
-    )
-);
-
-export const StopIcon = ({ className = "h-5 w-5" }) => (
-    React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className: className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 },
-        React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M21 12a9 9 0 11-18 0 9 9 0 0118 0z" }),
-        React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M9 9h6v6H9z" })
-    )
-);
-
-export const MicrophoneIcon = ({ className = "h-6 w-6" }) => (
-    React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className: className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 },
-      React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" })
-    )
-);
-
-export const TrashIcon = () => (
-    React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className: "h-4 w-4 mr-2", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
+export const TrashIcon = ({ className = "h-4 w-4" }) => (
+    React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
         React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" })
     )
 );
@@ -133,53 +84,26 @@ export const CreditCardIcon = ({ className = 'w-6 h-6' }) => (
     )
 );
 
-export const SunIcon = ({ className = 'w-6 h-6' }) => (
-    React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className: className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
-      React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M12 12a5 5 0 100-10 5 5 0 000 10z" })
+export const StarIcon = () => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className: "h-12 w-12 text-yellow-500", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
+  React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: "2", d: "M11.049 2.927c.3-.921 1.603-.921 1.603 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" })
+);
+
+export const LockIcon = ({ className = "h-12 w-12 text-brand-purple-light" }) => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className: className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
+  React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: "2", d: "M12 15v2m-6 4h16a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" })
+);
+
+export const SettingsIcon = ({ className = "w-5 h-5" }) => (
+    React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className: className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 },
+        React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" }),
+        React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M15 12a3 3 0 11-6 0 3 3 0 016 0z" })
     )
 );
 
-export const MoonIcon = ({ className = 'w-6 h-6' }) => (
-    React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className: className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
-      React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" })
-    )
-);
-
-export const MenuIcon = ({ className = 'w-6 h-6' }) => (
-    React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className: className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
-      React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M4 6h16M4 12h16M4 18h16" })
-    )
-);
-
-export const HistoryIcon = () => (
-    React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className: "h-5 w-5", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
-        React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" })
-    )
-);
-
-export const LockIcon = () => (
-    React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className: "h-12 w-12 text-slate-400 dark:text-brand-text-light", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
-        React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" })
-    )
-);
-
-export const StarIcon = ({ className = "h-12 w-12 text-yellow-400" }) => (
-    React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className: className, viewBox: "0 0 20 20", fill: "currentColor" },
-        React.createElement('path', { d: "M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" })
-    )
-);
-
-export const Logo = () => (
-    React.createElement('img', {
-        src: "https://i.imgur.com/3urddbC.jpeg",
-        alt: "SciGenius Logo",
-        className: "h-10 w-auto rounded-lg"
-    })
-);
-
-export const ArrowLeftIcon = ({ className = "" }) => (
-    React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className: `h-5 w-5 mr-2 ${className}`, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
-        React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M10 19l-7-7m0 0l7-7m-7 7h18" })
+export const Logo = ({ size = 'text-2xl', isExpanded = true }) => (
+    React.createElement('div', { className: `flex items-center gap-3 transition-all duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0'}` },
+        React.createElement('span', {
+            className: `${size} font-bold bg-gradient-to-r from-cyan-400 via-lime-400 to-yellow-400 text-transparent bg-clip-text`
+        }, 'PM Roadmap')
     )
 );
 
@@ -189,193 +113,205 @@ export const AttachIcon = ({ className = "h-6 w-6" }) => (
     )
 );
 
-export const ResetIcon = ({ className = "h-5 w-5" }) => (
-    React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className: className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
-      React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M4 4v5h5m-5 0a9 9 0 0014.123 5.877M20 20v-5h-5m5 0a9 9 0 00-14.123-5.877" })
-    )
-);
-
 export const SidebarToggleIcon = ({ isExpanded }) => (
     React.createElement('svg', {
         xmlns: "http://www.w3.org/2000/svg",
-        className: `h-6 w-6 text-slate-600 dark:text-brand-text-light transition-transform duration-300`,
-        style: { transform: isExpanded ? 'rotate(0deg)' : 'rotate(180deg)' },
+        className: `h-6 w-6 text-brand-text-light transition-transform duration-300`,
+        style: { transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' },
         fill: "none",
         viewBox: "0 0 24 24",
         stroke: "currentColor",
         strokeWidth: 2
     },
-        React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M11 19l-7-7 7-7m8 14l-7-7 7-7" })
+        React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M4 6h16M4 12h16M4 18h16" })
     )
 );
 
-// --- Video Generator Icons ---
-export const FullscreenIcon = ({ className = "w-6 h-6" }) => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 },
-    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 0h-4m4 0l-5-5" })
+export const PlusIcon = ({ className = 'h-5 w-5' }) => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M12 6v6m0 0v6m0-6h6m-6 0H6" })
 );
 
-export const ExitFullscreenIcon = ({ className = "w-6 h-6" }) => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 },
-    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M10 14l-5 5m0 0v-4m0 4h4m1-9l5-5m0 0h-4m4 0v4" })
+// --- Project Browser Icons ---
+export const FolderIcon = ({ className = "w-6 h-6" }) => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "currentColor", viewBox: "0 0 24 24" },
+    React.createElement('path', { d: "M19.7 7H12l-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2z" })
 );
 
-export const VideoIcon = ({ className = "h-5 w-5" }) => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 },
-    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" })
+export const FileIcon = ({ className = "w-6 h-6" }) => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" })
 );
 
-// --- Admin Icons ---
-export const UsersIcon = ({ className = "h-6 w-6" }) => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 },
-    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" })
+export const ChevronRightIcon = ({ className = "w-4 h-4" }) => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M9 5l7 7-7 7" })
 );
 
-export const ChartBarIcon = ({ className = "h-6 w-6" }) => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 },
-    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0h6" })
+export const MoreVerticalIcon = ({ className = "w-5 h-5" }) => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" })
 );
 
-export const CogIcon = ({ className = "h-6 w-6" }) => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 },
-    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" }),
-    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M15 12a3 3 0 11-6 0 3 3 0 016 0z" })
-);
 
-export const TrendingUpIcon = ({ className = "h-6 w-6" }) => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 },
-    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" })
-);
-
-export const CurrencyDollarIcon = ({ className = "h-6 w-6" }) => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 },
-    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" })
-);
-
-export const SearchIcon = ({ className = "h-5 w-5" }) => (
-    React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className: className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 },
-        React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" })
-    )
-);
-
-// --- Service Icons ---
+// --- New Project Management Icons ---
 
 const iconProps = {
     xmlns: "http://www.w3.org/2000/svg",
-    className: "h-8 w-8 text-brand-red mb-2",
+    className: "h-6 w-6", // Default size, can be overridden
     fill: "none",
     viewBox: "0 0 24 24",
     stroke: "currentColor",
-    strokeWidth: 2
+    strokeWidth: 1.5
 };
 
-export const ResearchCopilotIcon = () => React.createElement('svg', iconProps,
-    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" }),
-    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M9 17v-2a4 4 0 014-4h2" })
+export const DashboardIcon = ({ className = iconProps.className }) => React.createElement('svg', { ...iconProps, className },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" })
 );
 
-export const ResearchWriterIcon = () => React.createElement('svg', iconProps,
+export const PlanningIcon = ({ className = iconProps.className }) => React.createElement('svg', { ...iconProps, className },
     React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" })
 );
 
-export const PromptGeneratorIcon = () => React.createElement('svg', iconProps,
-    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" })
+export const RiskIcon = ({ className = iconProps.className }) => React.createElement('svg', { ...iconProps, className },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" })
 );
 
-export const ParaphraserIcon = () => React.createElement('svg', iconProps,
-    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" })
+export const ScheduleIcon = ({ className = iconProps.className }) => React.createElement('svg', { ...iconProps, className },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" })
 );
 
-export const AIHumanizerIcon = () => React.createElement('svg', iconProps,
-    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" })
+export const BudgetIcon = ({ className = iconProps.className }) => React.createElement('svg', { ...iconProps, className },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" })
 );
 
-export const ContentCreatorIcon = () => React.createElement('svg', iconProps,
-    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" })
-);
-
-export const InteriorDesignerIcon = () => React.createElement('svg', iconProps,
-    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" })
-);
-
-export const TranslatorIcon = () => React.createElement('svg', iconProps,
-    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M3 5h12M9 3v2m4 13h4m-4 0l-4 4m0-4l4 4m2-11l-4-4m4 4l4 4m-4-4v12" })
-);
-
-export const ChatIcon = () => React.createElement('svg', iconProps,
+export const AssistantIcon = ({ className = iconProps.className }) => React.createElement('svg', { ...iconProps, className },
     React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" })
 );
 
-export const DataAnalysisIcon = ({className} = {}) => React.createElement('svg', className ? {xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2} : iconProps,
-    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125-1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" })
+export const StructureIcon = ({ className = iconProps.className, viewBox = "0 0 24 24" }) => React.createElement('svg', { ...iconProps, className, viewBox },
+    React.createElement('circle', { cx: "12", cy: "5", r: "2" }),
+    React.createElement('circle', { cx: "6", cy: "19", r: "2" }),
+    React.createElement('circle', { cx: "18", cy: "19", r: "2" }),
+    React.createElement('path', { d: "M12 7v10" }),
+    React.createElement('path', { d: "m9 16.5-3-3" }),
+    React.createElement('path', { d: "m15 16.5 3-3" }),
+    React.createElement('path', { d: "M6 17v-3" }),
+    React.createElement('path', { d: "M18 17v-3" })
 );
 
-export const PresentationIcon = () => React.createElement('svg', iconProps,
-    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M16 15v-1a4 4 0 00-4-4H8m0 0l4 4m-4-4l4-4m-1 12H7a2 2 0 01-2-2V7a2 2 0 012-2h10a2 2 0 012 2v4" })
+export const KpiIcon = ({ className = iconProps.className }) => React.createElement('svg', { ...iconProps, className },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z" }),
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M21.5 12c0-5.25-4.25-9.5-9.5-9.5S2.5 6.75 2.5 12s4.25 9.5 9.5 9.5" }),
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "m14 14 3.5 3.5" })
 );
 
-export const InfographicIcon = () => React.createElement('svg', iconProps,
-    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" })
+export const SCurveIcon = ({ className = iconProps.className }) => React.createElement('svg', { ...iconProps, className },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M3 18c3.5-3.5 4-10 7-12 3-2 5.5.5 8 5" }),
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M21 21H3V3" })
 );
 
-export const FlowChartIcon = () => React.createElement('svg', iconProps,
-    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0h6" })
+export const DocumentIcon = ({ className = iconProps.className }) => React.createElement('svg', { ...iconProps, className },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" })
 );
 
-export const InfographicVideoIcon = () => React.createElement('svg', iconProps,
-    React.createElement('rect', { x: "3", y: "3", width: "18", height: "18", rx: "2", ry: "2" }),
-    React.createElement('path', { d: "M7 3v18M17 3v18M3 12h18M3 7h4M3 17h4M17 7h4M17 17h4" }),
-    React.createElement('path', { d: "M9 14v-2M12 14v-4M15 14v-6" })
+export const BoardIcon = ({ className = iconProps.className }) => React.createElement('svg', { ...iconProps, className },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 00-2-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 00-2-2h-2a2 2 0 00-2 2" })
 );
 
-export const ShareIcon = ({ className = "h-5 w-5" }) => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 },
-    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" })
-);
-
-export const PencilIcon = () => React.createElement('svg', iconProps,
-    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" })
-);
-
-export const ClipboardTextIcon = () => React.createElement('svg', iconProps,
-    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" })
-);
-
-export const FileImportIcon = () => React.createElement('svg', iconProps,
-    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2zM15 13l-3 3m0 0l-3-3m3 3V8" })
-);
-
-// --- Data Analyzer Icons ---
-export const GridIcon = ({ className = "w-5 h-5" }) => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 },
-    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" })
-);
-
-export const ListIcon = ({ className = "w-5 h-5" }) => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 },
+export const ListIcon = ({ className = iconProps.className }) => React.createElement('svg', { ...iconProps, className },
     React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M4 6h16M4 10h16M4 14h16M4 18h16" })
 );
 
-export const FocusIcon = ({ className = "w-5 h-5" }) => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 },
-    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 0h-4m4 0l-5-5" })
+export const TimelineIcon = ({ className = iconProps.className }) => React.createElement('svg', { ...iconProps, className },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" })
 );
 
-export const ErrorIcon = ({ className = "h-5 w-5" }) => (
-    React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 },
-        React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" })
-    )
+export const BarChartIcon = ({ className = iconProps.className }) => React.createElement('svg', { ...iconProps, className },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" })
 );
 
-// --- New Icons for Presentation Generator ---
-export const ParagraphIcon = ({ className = "h-5 w-5" }) => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 },
-    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M4 6h16M4 12h16M4 18h7" })
-);
 
-export const TableCellsIcon = ({ className = "h-5 w-5" }) => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 },
-    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M9 4h6a2 2 0 012 2v12a2 2 0 01-2 2H9a2 2 0 01-2-2V6a2 2 0 012-2zm0 6h6m-6 4h6m-6 4h6M3 6h.01M3 10h.01M3 14h.01M3 18h.01M21 6h-.01M21 10h-.01M21 14h-.01M21 18h-.01" })
-);
+// --- New Feature Toolbar Icons ---
+const toolbarIconProps = {
+    xmlns: "http://www.w3.org/2000/svg", className: "h-5 w-5", fill: "none",
+    viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2
+};
 
-export const SparklesIcon = ({ className = "h-5 w-5" }) => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 },
-    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M5 3v4M3 5h4M6 17v4m-2-2h4m-3-7V3m2 2h-4m1 11V9m2 2h-4m5 5v4m2-2h-4m1-11V3m2 2h-4" })
-);
+export const ZoomInIcon = () => React.createElement('svg', toolbarIconProps, React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" }));
+export const ZoomOutIcon = () => React.createElement('svg', toolbarIconProps, React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7" }));
+export const FullscreenIcon = () => React.createElement('svg', toolbarIconProps, React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 0h-4m4 0l-5-5" }));
+export const FullscreenExitIcon = () => React.createElement('svg', toolbarIconProps, React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M4 14h4v4m-4-4l5 5m11-5h-4v4m4-4l-5 5M14 4h4v4m-4-4l5 5M5 9V5h4m-4 0l5 5" }));
+export const ExpandIcon = () => React.createElement('svg', toolbarIconProps, React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M19 9l-7 7-7-7" }));
+export const CollapseIcon = () => React.createElement('svg', toolbarIconProps, React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M5 15l7-7 7 7" }));
+export const EditIcon = () => React.createElement('svg', toolbarIconProps, React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" }));
+export const ExportIcon = () => React.createElement('svg', toolbarIconProps, React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" }));
+export const RefreshIcon = () => React.createElement('svg', toolbarIconProps, React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" }));
+export const MaximizeIcon = () => React.createElement('svg', toolbarIconProps, React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 0h-4m4 0l-5-5" }));
 
-export const RectangleStackIcon = ({ className = "h-5 w-5" }) => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 },
-    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M6 6.878V6a2 2 0 012-2h10a2 2 0 012 2v7.122M6 12.878V18a2 2 0 002 2h10a2 2 0 002-2v-5.122M6 12.878L18 6" })
-);
 
-export const CheckCircleIcon = ({ className = "h-5 w-5" }) => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 },
-    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" })
-);
+// --- New Feature Toolbar Component ---
+export const FeatureToolbar = ({ title, containerRef, onZoomIn, onZoomOut, onToggleEdit, isEditing, onExport, onExpandAll, onCollapseAll, scale, onScaleChange, customControls }) => {
+    const [isFullscreen, setIsFullscreen] = React.useState(false);
 
-export const QuestionMarkCircleIcon = ({ className = "h-5 w-5" }) => React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 },
-    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" })
-);
+    const handleFullscreen = () => {
+        if (!containerRef.current) return;
+        if (!document.fullscreenElement) {
+            containerRef.current.requestFullscreen().catch(err => {
+                alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    };
+
+    React.useEffect(() => {
+        const onFullscreenChange = () => setIsFullscreen(!!document.fullscreenElement);
+        document.addEventListener('fullscreenchange', onFullscreenChange);
+        return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
+    }, []);
+
+    const IconButton = ({ icon, onClick, disabled = false, tooltip, className = '' }) => (
+        React.createElement('button', {
+            onClick, disabled, 'aria-label': tooltip,
+            className: `p-2 rounded-md text-brand-text-light hover:bg-white/10 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${className}`
+        }, icon)
+    );
+    
+    const scaleOptions = [
+        { id: 'days', label: 'Days' },
+        { id: 'weeks', label: 'Weeks' },
+        { id: 'months', label: 'Months' },
+        { id: 'quarters', label: 'Quarter' }
+    ];
+
+    return React.createElement('div', {
+        className: 'non-printable flex-shrink-0 h-16 flex items-center justify-between px-6 border-b border-dark-border bg-dark-card/50'
+    },
+        React.createElement('h2', { className: 'text-xl font-bold text-white' }, title),
+        React.createElement('div', { className: 'flex items-center gap-2' },
+            customControls,
+            (customControls) && React.createElement('div', { className: 'w-px h-6 bg-dark-border mx-2' }),
+
+            onZoomIn && React.createElement(IconButton, { icon: React.createElement(ZoomInIcon), onClick: onZoomIn, tooltip: 'Zoom In' }),
+            onZoomOut && React.createElement(IconButton, { icon: React.createElement(ZoomOutIcon), onClick: onZoomOut, tooltip: 'Zoom Out' }),
+            
+            onScaleChange && React.createElement('div', { className: 'flex items-center p-1 bg-dark-card-solid rounded-md mx-2' },
+                scaleOptions.map(option => React.createElement('button', {
+                    key: option.id,
+                    onClick: () => onScaleChange(option.id),
+                    className: `px-3 py-1 text-sm font-semibold rounded-md transition-colors ${scale === option.id ? 'bg-dark-bg text-white' : 'text-brand-text-light hover:bg-dark-bg/50'}`
+                }, option.label))
+            ),
+
+            onExpandAll && React.createElement(IconButton, { icon: React.createElement(ExpandIcon), onClick: onExpandAll, tooltip: 'Expand All' }),
+            onCollapseAll && React.createElement(IconButton, { icon: React.createElement(CollapseIcon), onClick: onCollapseAll, tooltip: 'Collapse All' }),
+            
+            (onExpandAll || onScaleChange) && React.createElement('div', { className: 'w-px h-6 bg-dark-border mx-2' }),
+            
+            onToggleEdit && React.createElement(IconButton, {
+                icon: React.createElement(EditIcon),
+                onClick: onToggleEdit,
+                tooltip: isEditing ? 'Finish Editing' : 'Edit Content',
+                className: isEditing ? 'bg-brand-purple/20 text-brand-purple-light' : ''
+            }),
+            React.createElement(IconButton, { icon: isFullscreen ? React.createElement(FullscreenExitIcon) : React.createElement(FullscreenIcon), onClick: handleFullscreen, tooltip: isFullscreen ? 'Exit Fullscreen' : 'Fullscreen' }),
+            onExport && React.createElement(IconButton, { icon: React.createElement(ExportIcon), onClick: onExport, tooltip: 'Export as PDF/Print' })
+        )
+    );
+};

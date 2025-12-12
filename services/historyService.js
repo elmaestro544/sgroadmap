@@ -1,33 +1,40 @@
-const HISTORY_KEY = 'scigenius_history';
-const MAX_HISTORY_ITEMS = 20;
 
-const getFullHistory = () => {
+import * as supabaseClient from './supabaseClient.js';
+
+// Fallback to local storage if Supabase is not configured
+const HISTORY_KEY = 'pmroadmap_history';
+
+const getFullLocalHistory = () => {
     try {
         const history = localStorage.getItem(HISTORY_KEY);
         return history ? JSON.parse(history) : {};
     } catch (e) {
-        console.error("Failed to parse history from localStorage", e);
         return {};
     }
 };
 
-const saveFullHistory = (history) => {
-    try {
-        localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
-    } catch (e) {
-        console.error("Failed to save history to localStorage", e);
+export const getHistory = async (userEmail, serviceId) => {
+    // Try Supabase first
+    if (supabaseClient.supabase) {
+        return await supabaseClient.getChatHistory(serviceId);
     }
-};
 
-export const getHistory = (userEmail, serviceId) => {
+    // Fallback
     if (!userEmail) return [];
-    const fullHistory = getFullHistory();
+    const fullHistory = getFullLocalHistory();
     return fullHistory[userEmail]?.[serviceId] || [];
 };
 
-export const addHistoryItem = (userEmail, serviceId, item) => {
+export const addHistoryItem = async (userEmail, serviceId, item) => {
+    // Try Supabase first
+    if (supabaseClient.supabase) {
+        await supabaseClient.saveChatMessage(serviceId, item);
+        return;
+    }
+
+    // Fallback
     if (!userEmail) return;
-    const fullHistory = getFullHistory();
+    const fullHistory = getFullLocalHistory();
     
     if (!fullHistory[userEmail]) {
         fullHistory[userEmail] = {};
@@ -37,22 +44,24 @@ export const addHistoryItem = (userEmail, serviceId, item) => {
     }
     
     const newItem = { ...item, id: Date.now(), timestamp: new Date().toISOString() };
-    
-    // Add new item to the front
     fullHistory[userEmail][serviceId].unshift(newItem);
     
-    // Keep history to a reasonable size
-    fullHistory[userEmail][serviceId] = fullHistory[userEmail][serviceId].slice(0, MAX_HISTORY_ITEMS);
-    
-    saveFullHistory(fullHistory);
+    try {
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(fullHistory));
+    } catch (e) {
+        console.error("Local storage error", e);
+    }
 };
 
 export const clearHistory = (userEmail, serviceId) => {
+    // Supabase deletion not implemented in this snippet to keep it simple,
+    // usually users just want to clear local view or we add a delete endpoint.
+    // For now, only clearing local fallback.
     if (!userEmail) return;
-    const fullHistory = getFullHistory();
+    const fullHistory = getFullLocalHistory();
     if (fullHistory[userEmail]?.[serviceId]) {
         fullHistory[userEmail][serviceId] = [];
-        saveFullHistory(fullHistory);
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(fullHistory));
     }
-    return []; // Return empty array for immediate state update
+    return []; 
 };

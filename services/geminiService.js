@@ -1,839 +1,427 @@
-
 import { GoogleGenAI, Modality, Type } from "@google/genai";
-import { LANGUAGES, CONTENT_TYPES, TONES } from "../constants.js";
+import { getUserSettings, getEnv } from "./supabaseClient.js";
 
-// --- API Key and Client Management ---
+// --- Configuration Helper ---
 
-const getApiKey = (envVarName) => {
-    let keysRaw;
-
-    // 1. Try Vite/Modern build injection (import.meta.env)
+export const getAiSettings = () => {
     try {
-        if (import.meta && import.meta.env) {
-            // Priority: Exact match, then Try with VITE_ prefix, then Try without VITE_ prefix
-            keysRaw = import.meta.env[envVarName] || 
-                      import.meta.env[`VITE_${envVarName}`] || 
-                      import.meta.env[envVarName.replace('VITE_', '')];
+        const settings = localStorage.getItem('adminSettings');
+        return settings ? JSON.parse(settings) : {};
+    } catch (e) {
+        return {};
+    }
+};
+
+// Internal Sync Helpers (for fallback)
+const getAdminProvider = () => {
+    const settings = getAiSettings();
+    return settings.aiProvider || 'google';
+};
+
+const getAdminApiKey = () => {
+    const settings = getAiSettings();
+    const provider = getAdminProvider();
+    if (provider === 'google') {
+        // Try User Settings (Admin override) first, then fallback to Environment Variable
+        const envKey = getEnv('API_KEY');
+        return (settings.aiApiKey && settings.aiApiKey.trim() !== '') ? settings.aiApiKey : envKey;
+    }
+    return settings.aiApiKey;
+};
+
+const getAdminModelId = (defaultModel = 'gemini-2.5-flash') => {
+    const settings = getAiSettings();
+    return settings.aiModel || defaultModel;
+};
+
+// --- Unified Config Resolver ---
+export const resolveAIConfig = async () => {
+    let provider = null;
+    let apiKey = null;
+    let model = null;
+
+    // 1. Try User Settings
+    try {
+        const userSettings = await getUserSettings();
+        if (userSettings && userSettings.aiApiKey) {
+            provider = userSettings.aiProvider || 'google';
+            apiKey = userSettings.aiApiKey;
+            model = userSettings.aiModel || 'gemini-2.5-flash';
         }
     } catch (e) {
-        // Ignore if import.meta is not supported in the current environment
+        console.warn("Could not fetch user settings, falling back.", e);
     }
 
-    // 2. Fallback to window.process.env (env.js or legacy injection)
-    if (!keysRaw && typeof window !== 'undefined' && window.process && window.process.env) {
-        keysRaw = window.process.env[envVarName] || 
-                  window.process.env[`VITE_${envVarName}`] ||
-                  window.process.env[envVarName.replace('VITE_', '')];
+    // 2. Fallback to Admin / Global
+    if (!apiKey) {
+        provider = getAdminProvider();
+        apiKey = getAdminApiKey();
+        model = getAdminModelId();
     }
 
-    if (!keysRaw) return undefined;
+    return { provider, apiKey, model };
+};
+
+
+// --- API Helpers ---
+
+const mapTypeToSchema = (type) => {
+    switch(type) {
+        case Type.STRING: return 'string';
+        case Type.NUMBER: return 'number';
+        case Type.INTEGER: return 'integer';
+        case Type.BOOLEAN: return 'boolean';
+        case Type.ARRAY: return 'array';
+        case Type.OBJECT: return 'object';
+        default: return 'string';
+    }
+};
+
+const convertSchemaToStandardJson = (geminiSchema) => {
+    if (!geminiSchema) return null;
     
-    // Handle multiple keys separated by commas
-    const keys = keysRaw.split(',').map(k => k.trim()).filter(isValidKey);
+    const schema = { type: mapTypeToSchema(geminiSchema.type) };
     
-    if (keys.length === 0) return undefined;
-    return keys[Math.floor(Math.random() * keys.length)];
-};
-
-const isValidKey = (key) => {
-    if (!key) return false;
-    // Filter out default placeholders or empty instructions
-    if (key.startsWith('YOUR_')) return false;
-    if (key.startsWith('__')) return false; // Filter out placeholders like __VITE_API_KEY__
-    if (key.includes('PLACEHOLDER')) return false;
-    return true;
-};
-
-// Explicitly ask for VITE_API_KEY since that is your variable name
-export const geminiApiKey = getApiKey('VITE_API_KEY');
-
-const otherApiKeys = {
-  openai: getApiKey('VITE_OPENAI_API_KEY'),
-};
-
-const isGeminiConfigured = () => !!geminiApiKey;
-
-export const isModelConfigured = (modelId) => {
-    if (modelId.startsWith('gemini')) {
-        return isGeminiConfigured();
-    }
-    if (modelId.startsWith('openai')) {
-        return !!otherApiKeys.openai;
-    }
-    return !!otherApiKeys[modelId];
-};
-
-export const isAnyModelConfigured = () => {
-    const configured = isGeminiConfigured() || !!otherApiKeys.openai;
-    if (!configured) {
-        console.warn("SciGenius: No valid API keys found. Please check env.js or your environment variables.");
-    }
-    return configured;
-};
-
-const geminiClient = isGeminiConfigured() ? new GoogleGenAI({ apiKey: geminiApiKey }) : null;
-
-const textModel = 'gemini-2.5-flash';
-const advancedTextModel = 'gemini-2.5-pro';
-const imageModel = 'gemini-2.5-flash-image';
-
-// Legacy export for backward compatibility
-export const isApiKeyConfigured = isAnyModelConfigured();
-export const isImageApiKeyConfigured = isModelConfigured('openai-image');
-
-// --- Helper Functions ---
-
-const fileToGenerativePart = async (file) => {
-    const base64EncodedDataPromise = new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result.split(',')[1]);
-        reader.readAsDataURL(file);
-    });
-    return {
-        inlineData: { data: await base64EncodedDataPromise, mimeType: file.type },
-    };
-};
-
-const fileToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = error => reject(error);
-    });
-};
-
-// --- Generic API Handlers ---
-
-async function generateText(prompt, systemInstruction) {
-    if (!isModelConfigured('gemini')) {
-        throw new Error(`API Key for model Gemini is not configured.`);
-    }
-    if (!geminiClient) throw new Error("Gemini client not initialized.");
+    if (geminiSchema.description) schema.description = geminiSchema.description;
+    if (geminiSchema.enum) schema.enum = geminiSchema.enum;
     
-    const result = await geminiClient.models.generateContent({
-        model: textModel,
-        contents: prompt,
-        config: { systemInstruction }
-    });
-    return result.text;
-}
-
-
-// --- Chat Management ---
-
-export const createChatSession = () => {
-    if (geminiClient) {
-        return geminiClient.chats.create({ model: textModel });
+    if (geminiSchema.items) {
+        schema.items = convertSchemaToStandardJson(geminiSchema.items);
     }
-    return null;
-};
-
-export const sendMessageStream = async (chat, message, file) => {
-    // This function is now Gemini-specific due to streaming nature
-    const messageParts = [{ text: message }];
-    if (file) {
-        const filePart = await fileToGenerativePart(file);
-        messageParts.unshift(filePart);
-    }
-    return chat.sendMessageStream({ message: messageParts });
-};
-
-export const sendChatMessage = async (chatSession, message, file, useWebSearch) => {
-    if (!geminiClient) throw new Error("Gemini client not initialized.");
     
-    const messageParts = [{ text: message }];
-    if (file) {
-        messageParts.unshift(await fileToGenerativePart(file));
-    }
-
-    if (useWebSearch) {
-        const result = await geminiClient.models.generateContent({
-            model: textModel,
-            contents: { parts: messageParts },
-            config: { tools: [{ googleSearch: {} }] },
-        });
-        return { text: result.text, sources: result.candidates?.[0]?.groundingMetadata?.groundingChunks || [], isStream: false };
-    } else {
-        const stream = await chatSession.sendMessageStream({ message: messageParts });
-        return { stream, isStream: true };
-    }
-};
-
-
-// --- Service-Specific Functions (Refactored) ---
-
-export const findRelatedPapers = async (topic) => {
-    if (!geminiClient) throw new Error("Gemini client not initialized.");
-    const prompt = `Find 5 recent and highly-cited academic papers on the topic: "${topic}". For each paper, provide the title, all authors, publication year, a brief one-sentence summary, and a direct URL to the paper if available.`;
-
-    const result = await geminiClient.models.generateContent({
-        model: textModel,
-        contents: prompt,
-        config: { tools: [{ googleSearch: {} }] },
-    });
-    
-    const sources = result.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
-    const text = result.text;
-    const papers = [];
-    const paperBlocks = text.split(/\d+\.\s+/).filter(block => block.trim() !== '');
-
-    for (const block of paperBlocks) {
-        const titleMatch = block.match(/Title:\s*(.*?)\n/);
-        const authorsMatch = block.match(/Authors?:\s*(.*?)\n/);
-        const yearMatch = block.match(/Year:\s*(\d{4})/);
-        const summaryMatch = block.match(/Summary:\s*(.*?)\n/);
-        const linkMatch = block.match(/URL:\s*(https?:\/\/[^\s]+)/);
-
-        if (titleMatch && authorsMatch && yearMatch && summaryMatch) {
-            papers.push({
-                title: titleMatch[1].trim(),
-                authors: authorsMatch[1].split(',').map(a => a.trim()),
-                year: parseInt(yearMatch[1], 10),
-                summary: summaryMatch[1].trim(),
-                link: linkMatch ? linkMatch[1].trim() : '#',
-            });
+    if (geminiSchema.properties) {
+        schema.properties = {};
+        for (const [key, prop] of Object.entries(geminiSchema.properties)) {
+            schema.properties[key] = convertSchemaToStandardJson(prop);
         }
+        if (geminiSchema.required) {
+            schema.required = geminiSchema.required;
+        }
+        schema.additionalProperties = false; 
     }
-    return { papers, sources };
+    
+    return schema;
 };
 
-export const generatePrompt = async (topic, language, type = 'advanced') => {
-  let systemInstruction;
-
-  switch (type) {
-    case 'simple':
-        systemInstruction = language === 'ar'
-          ? `أنت مهندس أوامر. مهمتك هي تحويل موضوع بسيط يقدمه المستخدم إلى أمر واضح واحترافي وفعال للذكاء الاصطناعي التوليدي. اتبع هذه المبادئ: 1. حدد المهمة بوضوح. 2. حدد التنسيق المطلوب. 3. قدم السياق. 4. استخدم لغة دقيقة. يجب أن يكون الأمر النهائي فقرة واحدة قصيرة وألا يتجاوز 90 كلمة. لا تستخدم علامات النجمة (*) أو أي تنسيق ماركداون. يجب أن تحتوي الاستجابة على نص الأمر فقط. يجب أن يكون الأمر الناتج باللغة العربية.`
-          : `You are a prompt engineer. Your task is to transform a simple user topic into a clear, professional, and effective prompt for a generative AI. Follow these principles: 1. Define the Task Clearly. 2. Specify the Format. 3. Provide Context. 4. Use Precise Language. The final prompt must be a single, short paragraph and no more than 90 words. Do not use asterisks (*) or any markdown formatting. The entire response must be ONLY the generated prompt text. The output prompt must be in English.`;
-        break;
-    case 'image':
-        systemInstruction = language === 'ar'
-          ? `أنت مهندس أوامر خبير في توليد الصور بالذكاء الاصطناعي. قم بتحويل موضوع المستخدم إلى أمر مفصل واحترافي. اتبع هذا الهيكل: 1. الدور والسياق (الغرض). 2. وصف الموضوع (المظهر، العواطف، الإجراءات). 3. النمط والحالة المزاجية (فوتوغرافي، كرتوني، درامي) وموضوعات الألوان. 4. التكوين والمنظور (لقطة مقربة، زاوية واسعة). 5. مواصفات الإخراج (الدقة، نسبة العرض إلى الارتفاع). 6. القيود (ما يجب تضمينه أو تجنبه). يجب أن يكون الأمر النهائي فقرة واحدة جيدة التنظيم. يجب أن تحتوي الاستجابة على نص الأمر فقط. يجب أن يكون الأمر الناتج باللغة العربية.`
-          : `You are an expert prompt engineer for AI image generation. Transform a user topic into a detailed, professional prompt. Follow this structure: 1. Role & Context (purpose). 2. Subject Description (appearance, emotions, actions). 3. Style and Mood (photorealistic, cartoon, dramatic) and color themes. 4. Composition & Perspective (close-up, wide-angle). 5. Output Specifications (resolution, aspect ratio). 6. Constraints (what to include or avoid). The final prompt must be a single, well-structured paragraph. The entire response must be ONLY the generated prompt text. The output prompt must be in English.`;
-        break;
-    case 'video':
-        systemInstruction = language === 'ar'
-          ? `أنت مهندس أوامر خبير في توليد الفيديو بالذكاء الاصطناعي. قم بتحويل موضوع المستخدم إلى أمر مفصل واحترافي. اتبع هذا الهيكل: 1. الدور والسياق (الغرض من الفيديو). 2. وصف المشهد (الإعداد، الشخصيات، الإجراءات الرئيسية). 3. النمط البصري والمؤثرات (رسوم متحركة، سينمائي، تدرج لوني). 4. الصوت والحالة المزاجية (موسيقى خلفية، مؤثرات صوتية). 5. مواصفات الإخراج (المدة، الدقة). 6. القيود (ألوان العلامة التجارية، ما يجب تجنبه). يجب أن يكون الأمر النهائي فقرة واحدة جيدة التنظيم. يجب أن تحتوي الاستجابة على نص الأمر فقط. يجب أن يكون الأمر الناتج باللغة العربية.`
-          : `You are an expert prompt engineer for AI video generation. Transform a user topic into a detailed, professional prompt. Follow this structure: 1. Role & Context (purpose of the video). 2. Scene Description (setting, characters, key actions). 3. Visual Style & Effects (animated, cinematic, color grading). 4. Audio and Mood (background music, sound effects). 5. Output Specifications (length, resolution). 6. Constraints (brand colors, what to avoid). The final prompt must be a single, well-structured paragraph. The entire response must be ONLY the generated prompt text. The output prompt must be in English.`;
-        break;
-    case 'advanced':
-    default:
-        systemInstruction = language === 'ar'
-          ? `أنت مهندس أوامر خبير. قم بتوسيع موضوع المستخدم إلى أمر مفصل ومنظم. اتبع هذا النهج: 1. الشخصية والدور. 2. مهمة واضحة (مقسمة إلى خطوات إذا كانت معقدة). 3. السياق والتفاصيل (الجمهور، النبرة). 4. القيود والمتطلبات (عدد الكلمات، النمط). 5. الهيكل (استخدم علامات لفصل التعليمات). 6. المتغيرات (استخدم {عناصر نائبة}). يجب أن يكون الأمر النهائي منظمًا ومفصلاً وألا يتجاوز 270 كلمة. لا تستخدم علامات النجمة (*) أو أي تنسيق ماركداون. يجب أن تحتوي الاستجابة على نص الأمر فقط. يجب أن يكون الأمر الناتج باللغة العربية.`
-          : `You are an expert prompt engineer. Expand a user topic into a detailed, structured prompt. Use this approach: 1. Persona and Role. 2. Clear Task (break down if complex). 3. Context and Details (audience, tone). 4. Constraints and Requirements (word count, style). 5. Structure (use markers to separate instructions). 6. Variables (use {placeholders}). The final prompt must be well-structured, detailed, and no more than 270 words. Do not use asterisks (*) or any markdown formatting. The entire response must be ONLY the generated prompt text. The output prompt must be in English.`;
-        break;
-  }
-  return generateText(topic, systemInstruction);
-};
-
-export const checkPrompt = async (prompt, language) => {
-    if (!geminiClient) throw new Error("Gemini client not initialized.");
-
-    const systemInstruction = language === 'ar'
-    ? `أنت خبير في هندسة الأوامر للذكاء الاصطناعي. مهمتك هي تحليل موجه المستخدم بدقة وتقديم ملاحظات منظمة.
-
-    اتبع هذه الخطوات بالضبط:
-    1.  **تحليل الموجه:** راجع الصياغة والسياق لتقييم وضوح الهدف. قدم ملخصًا موجزًا في حقل "analysis".
-    2.  **تحديد المشكلات:** اكتشف بدقة أي أخطاء أو غموض أو مجالات للتحسين في الموجه. لكل مشكلة، قدم وصفًا موجزًا للمشكلة في "issue" وشرحًا لتأثيرها على النتائج في "explanation". ضعها في مصفوفة "issues".
-    3.  **تقييم المستوى:** قدم تقييمًا دقيقًا لمستوى جودة الموجه (على سبيل المثال، "مبتدئ"، "متوسط"، "متقدم"، "خبير"). ضع هذا في حقل "qualityLevel".
-    4.  **ملخص التقييم:** اكتب تقييمًا عامًا من جملة واحدة لجودة الموجه في حقل "assessment".
-    5.  **تحسين الموجه:** قدم نسخة احترافية جديدة ومحسنة من الموجه تكون جاهزة للاستخدام. يجب أن تكون هذه النسخة مفصلة ومنظمة جيدًا. ضعها في حقل "enhancedPrompt".
-    
-    يجب أن يكون الإخراج كائن JSON صالحًا فقط.`
-    : `You are an expert AI prompt engineer. Your task is to meticulously analyze a user's prompt and provide structured feedback.
-
-    Follow these steps exactly:
-    1.  **Prompt Analysis:** Review the wording and context to assess goal clarity. Provide a brief summary in the "analysis" field.
-    2.  **Issue Identification:** Accurately detect any errors, ambiguities, or areas for improvement in the prompt. For each issue, provide a brief description of the problem in "issue" and an explanation of its impact on the results in "explanation". Place these in an "issues" array.
-    3.  **Level Assessment:** Provide an accurate assessment of the prompt's quality level (e.g., "Beginner", "Intermediate", "Advanced", "Expert"). Put this in the "qualityLevel" field.
-    4.  **Assessment Summary:** Write a one-sentence overall assessment of the prompt's quality in the "assessment" field.
-    5.  **Prompt Enhancement:** Provide a new, professional, and enhanced version of the prompt that is ready to use. This should be detailed and well-structured. Put this in the "enhancedPrompt" field.
-    
-    The output must be a valid JSON object only.`;
-
-    const responseSchema = {
-        type: Type.OBJECT,
-        properties: {
-            analysis: {
-                type: Type.STRING,
-                description: "A brief analysis of the user's prompt."
-            },
-            issues: {
-                type: Type.ARRAY,
-                description: "An array of identified issues in the prompt.",
-                items: {
-                    type: Type.OBJECT,
-                    properties: {
-                        issue: { type: Type.STRING, description: "The title of the issue." },
-                        explanation: { type: Type.STRING, description: "Explanation of the issue and its impact." }
-                    }
-                }
-            },
-            qualityLevel: {
-                type: Type.STRING,
-                description: "The assessed quality level of the prompt (e.g., Beginner, Intermediate, Advanced)."
-            },
-            assessment: {
-                type: Type.STRING,
-                description: "A one-sentence summary of the prompt's quality."
-            },
-            enhancedPrompt: {
-                type: Type.STRING,
-                description: "A new, professionally enhanced version of the prompt."
+// --- Helper: Retry Logic ---
+const fetchWithRetry = async (url, options, retries = 3, backoff = 1000) => {
+    try {
+        const response = await fetch(url, options);
+        if (!response.ok) {
+            // If server error (5xx), throw to trigger retry
+            if (response.status >= 500) {
+                throw new Error(`Server error: ${response.status}`);
             }
-        },
-        required: ["analysis", "issues", "qualityLevel", "assessment", "enhancedPrompt"]
+            // 429 Too Many Requests - also retry
+            if (response.status === 429) {
+                 throw new Error(`Rate limit exceeded: ${response.status}`);
+            }
+            return response; // 4xx errors are usually permanent (client error), return to handle
+        }
+        return response;
+    } catch (err) {
+        if (retries > 0) {
+            console.warn(`Fetch failed, retrying in ${backoff}ms... (${retries} attempts left)`, err);
+            await new Promise(resolve => setTimeout(resolve, backoff));
+            return fetchWithRetry(url, options, retries - 1, backoff * 2);
+        }
+        throw err;
+    }
+};
+
+// --- Provider Implementations ---
+
+const generateGoogleContent = async (client, model, prompt, schema, systemInstruction) => {
+    const config = {
+        systemInstruction: systemInstruction,
     };
+    
+    if (schema) {
+        config.responseMimeType = "application/json";
+        config.responseSchema = schema;
+    }
 
-    const result = await geminiClient.models.generateContent({
-        model: textModel,
-        contents: prompt,
-        config: {
-            systemInstruction,
-            responseMimeType: 'application/json',
-            responseSchema,
-        }
-    });
-
-    let jsonText = result.text.trim().replace(/^```json\s*/, '').replace(/\s*```\s*$/, '');
+    // Google SDK handles its own retries internally usually, but we wrap in try/catch
     try {
-        return JSON.parse(jsonText);
-    } catch (e) {
-        console.error("Failed to parse prompt check JSON:", e, "Raw text:", jsonText);
-        throw new Error("Failed to get structured analysis from AI.");
-    }
-};
-
-export const redesignImage = async (file, roomType, style) => {
-    if (!isModelConfigured('openai-image')) {
-        throw new Error(`API key for model OpenAI is not configured.`);
-    }
-
-    if (!file) throw new Error("An image file is required for the OpenAI Vision model.");
-    
-    // Step 1: Analyze the image with GPT-4 Vision to get a description.
-    const base64Image = await fileToBase64(file);
-    const visionPrompt = `You are an expert scene descriptor. Analyze this image of a ${roomType}. Provide a detailed, factual description of the room's layout, perspective, key furniture, windows, doors, and lighting. Do not suggest any changes. Just describe what is there. This description will be used to recreate the scene.`;
-    
-    const visionResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${otherApiKeys.openai}`
-        },
-        body: JSON.stringify({
-            model: 'gpt-4-turbo',
-            messages: [{
-                role: 'user',
-                content: [
-                    { type: 'text', text: visionPrompt },
-                    { type: 'image_url', image_url: { url: base64Image } }
-                ]
-            }],
-            max_tokens: 400,
-        })
-    });
-
-    if (!visionResponse.ok) {
-        const errorData = await visionResponse.json();
-        console.error("OpenAI Vision API error:", errorData);
-        throw new Error(`OpenAI Vision API error: ${errorData.error?.message || visionResponse.statusText}`);
-    }
-    const visionData = await visionResponse.json();
-    const roomDescription = visionData.choices[0].message.content;
-
-    // Step 2: Use the description to generate a new image with DALL-E 3.
-    const redesignPrompt = `A photorealistic photo of a ${roomType} redesigned in a ${style} style. The original room layout is as follows: "${roomDescription}". Maintain the same perspective and general layout but apply the new style throughout. The final image should be a high-quality, realistic photograph.`;
-
-    const dalleResponse = await fetch('https://api.openai.com/v1/images/generations', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${otherApiKeys.openai}`
-        },
-        body: JSON.stringify({
-            model: 'dall-e-3',
-            prompt: redesignPrompt,
-            n: 1,
-            size: '1024x1024',
-            response_format: 'b64_json'
-        })
-    });
-
-    if (!dalleResponse.ok) {
-        const errorData = await dalleResponse.json();
-        console.error("OpenAI DALL-E API error:", errorData);
-        throw new Error(`OpenAI DALL-E API error: ${errorData.error?.message || dalleResponse.statusText}`);
-    }
-
-    const dalleData = await dalleResponse.json();
-    const b64Json = dalleData.data[0].b64_json;
-    const imageUrl = `data:image/png;base64,${b64Json}`;
-
-    return { type: 'image', content: imageUrl };
-};
-
-
-export const translateText = async (text, sourceLangCode, targetLangCode) => {
-    const sourceLang = LANGUAGES.find(l => l.code === sourceLangCode);
-    const targetLang = LANGUAGES.find(l => l.code === targetLangCode);
-    if (!sourceLang || !targetLang) throw new Error("Invalid language selected.");
-
-    const systemInstruction = `You are an expert multilingual translator. Your task is to translate the user's text from ${sourceLang.name} to ${targetLang.name}.
-Provide a high-quality, nuanced translation that is context-aware.
-CRITICAL: Your response must contain ONLY the translated text. Do not add any introductory phrases, explanations, or any other text outside of the translation itself.`;
-
-    return generateText(text, systemInstruction);
-};
-
-export const extractTextFromFile = async (file) => {
-    if (file.type.startsWith('image/')) {
-        if (!isModelConfigured('gemini')) {
-            throw new Error(`API Key for model Gemini is not configured.`);
-        }
-        if (!geminiClient) throw new Error("Gemini client not initialized.");
-        
-        const imagePart = await fileToGenerativePart(file);
-        const textPart = { text: "Extract all text from this image. If there is no text, return an empty response." };
-
-        const result = await geminiClient.models.generateContent({
-            model: textModel, // 'gemini-2.5-flash' supports multimodal
-            contents: { parts: [imagePart, textPart] }
+        const result = await client.models.generateContent({
+            model: model,
+            contents: { parts: [{ text: prompt }] },
+            config: config,
         });
         return result.text;
-    } else if (file.type === 'application/pdf') {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                try {
-                    const typedarray = new Uint8Array(e.target.result);
-                    const pdf = await window.pdfjsLib.getDocument(typedarray).promise;
-                    let text = '';
-                    for (let i = 1; i <= pdf.numPages; i++) {
-                        const page = await pdf.getPage(i);
-                        const content = await page.getTextContent();
-                        text += content.items.map(item => item.str).join(' ');
-                    }
-                    resolve(text);
-                } catch (error) {
-                    reject(error);
+    } catch (e) {
+        console.error("Google AI generation failed:", e);
+        if (e.message.includes('fetch')) {
+             throw new Error("Network error connecting to Google AI. Please check your connection.");
+        }
+        throw new Error(`Google AI Error: ${e.message}`);
+    }
+};
+
+const generateOpenAICompatibleContent = async (baseUrl, apiKey, model, prompt, schema, systemInstruction) => {
+    const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+    };
+    
+    if (baseUrl.includes('openrouter')) {
+        headers['HTTP-Referer'] = window.location.origin;
+        headers['X-Title'] = 'PM Roadmap';
+    }
+
+    const body = {
+        model: model,
+        messages: [
+            { role: "system", content: systemInstruction || "You are a helpful assistant." },
+            { role: "user", content: prompt }
+        ],
+        temperature: 0.7
+    };
+
+    if (schema) {
+        const jsonSchema = convertSchemaToStandardJson(schema);
+        if (baseUrl.includes('openai.com')) {
+            body.response_format = {
+                type: "json_schema",
+                json_schema: {
+                    name: "response",
+                    strict: true,
+                    schema: jsonSchema
                 }
             };
-            reader.onerror = reject;
-            reader.readAsArrayBuffer(file);
-        });
-    } else if (file.type === 'text/plain' || file.type === 'text/markdown') {
-        return file.text();
-    } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-        alert("Sorry, .docx file processing is not yet supported. Please copy/paste the text or save as PDF.");
-        return Promise.reject("DOCX not supported yet.");
-    } else {
-        throw new Error(`Unsupported file type: ${file.type}`);
-    }
-};
-
-export const paraphraseText = async (text, mode, language) => {
-    if (!geminiClient) throw new Error("Gemini client not initialized.");
-    const langName = language === 'ar' ? 'Arabic' : 'English';
-    const systemInstruction = `You are an expert rephrasing tool. Your specific task is to rewrite the provided text according to the '${mode}' mode. The core meaning must be preserved.
-- If mode is 'standard', provide a clear and correct alternative.
-- If mode is 'fluent', improve the flow and word choice.
-- If mode is 'formal', use professional and academic language.
-- If mode is 'simple', make it very easy to understand.
-- If mode is 'creative', use imaginative and original phrasing.
-CRITICAL: Your entire response must be ONLY a raw JSON array of strings. Do not add any introductory text, explanations, markdown formatting, or any characters outside of the JSON structure.
-Provide at least one and up to three rewritten variations. The language of the output must be ${langName}.`;
-
-    const responseSchema = {
-        type: Type.ARRAY,
-        items: {
-            type: Type.STRING,
-            description: `A rewritten version of the text in a ${mode} style.`
+        } else {
+            body.response_format = { type: "json_object" };
+            body.messages[0].content += `\n\nIMPORTANT: Return valid JSON matching this schema:\n${JSON.stringify(jsonSchema)}`;
         }
-    };
-
-    const result = await geminiClient.models.generateContent({
-        model: textModel,
-        contents: text,
-        config: {
-            systemInstruction,
-            responseMimeType: 'application/json',
-            responseSchema,
-        }
-    });
-
-    let jsonText = result.text.trim().replace(/^```json\s*/, '').replace(/\s*```\s*$/, '');
-    try {
-        const parsed = JSON.parse(jsonText);
-        // Ensure it's an array of strings
-        if (Array.isArray(parsed) && parsed.every(item => typeof item === 'string')) {
-            return parsed;
-        }
-        console.error("Parsed JSON is not an array of strings:", parsed);
-        throw new Error("Invalid data format from AI.");
-    } catch (e) {
-        console.error("Failed to parse paraphrasing JSON:", e, "Raw text:", jsonText);
-        throw new Error("Failed to get structured paraphrasing output from AI.");
-    }
-};
-
-export const generateContent = async (topic, contentTypeId, toneId, language) => {
-    const langName = language === 'ar' ? 'Arabic' : 'English';
-    const contentType = CONTENT_TYPES.find(c => c.id === contentTypeId)?.[language] || contentTypeId;
-    const tone = TONES.find(t => t.id === toneId)?.[language] || toneId;
-
-    const systemInstruction = `You are an expert content creator. Your task is to generate a well-written '${contentType}' with a '${tone}' tone of voice.
-The content should be engaging, informative, and relevant to the provided topic.
-The language of the output must be ${langName}.
-CRITICAL: Your response must contain ONLY the generated content as a raw string. Format it with markdown where appropriate (e.g., headings, lists). Do not add any introductory phrases like "Here is the content you requested:".`;
-    
-    return generateText(topic, systemInstruction);
-};
-
-export const humanizeText = async (text, mode, language) => {
-    const langName = language === 'ar' ? 'Arabic' : 'English';
-    const systemInstruction = `You are an expert text rewriter. Your task is to rewrite the user's text based on the mode: '${mode}'.
-- 'formal': Rephrase in a sophisticated, professional way.
-- 'simple': Make it very easy to understand.
-- 'creative': Use original and innovative phrasing.
-- 'academic': Use technical and scholarly language.
-- 'expand': Increase the length and detail of the text.
-- 'shorten': Convey the meaning more concisely.
-- 'humanize': Rewrite AI-generated text to sound more natural, authentic, and less robotic.
-CRITICAL: The output must be ONLY the rewritten text. Do not add explanations or introductory phrases. The language of the output must be ${langName}.`;
-    return generateText(text, systemInstruction);
-};
-
-export const generateSpeech = async (text, voicePreference = 'Female') => {
-    if (!isModelConfigured('gemini')) {
-        throw new Error(`API Key for model Gemini is not configured.`);
-    }
-    if (!geminiClient) throw new Error("Gemini client not initialized.");
-
-    // Strip markdown symbols and quotes for a cleaner speech output.
-    const cleanedText = text.replace(/(\*\*|__|`|\*|~|#)/g, '').replace(/"/g, '');
-
-    if (!cleanedText.trim()) {
-        throw new Error("Input text is empty after cleaning.");
-    }
-
-    let voiceName = 'Kore'; // Default to a female voice (Kore)
-    if (voicePreference === 'Male') {
-        voiceName = 'Fenrir';
-    } else if (voicePreference === 'Neutral') {
-        voiceName = 'Puck';
     }
 
     try {
-        const response = await geminiClient.models.generateContent({
-            model: "gemini-2.5-flash-preview-tts",
-            contents: [{ parts: [{ text: cleanedText }] }],
-            config: {
-                responseModalities: [Modality.AUDIO],
-                speechConfig: {
-                    voiceConfig: {
-                        prebuiltVoiceConfig: { voiceName: voiceName },
-                    },
-                },
-            },
+        const response = await fetchWithRetry(`${baseUrl}/chat/completions`, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(body)
         });
 
-        const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-        if (!base64Audio) {
-            throw new Error("No audio data received from API.");
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(`AI API Error: ${response.status} ${err.error?.message || response.statusText}`);
         }
-        return base64Audio;
+
+        const data = await response.json();
+        return data.choices[0].message.content;
+    } catch (error) {
+        console.error("AI Provider generation failed:", error);
+        if (error.message.includes('Failed to fetch')) {
+             throw new Error("Network error: Could not reach the AI provider. Check your internet connection.");
+        }
+        throw error;
+    }
+};
+
+// --- Main Exported Function ---
+
+export const generateAIContent = async (prompt, schema, systemInstruction = "You are a helpful assistant.") => {
+    const { provider, apiKey, model } = await resolveAIConfig();
+
+    if (!apiKey) throw new Error(`${provider} API Key is missing. Check User or Admin Settings.`);
+
+    // Route to appropriate provider
+    if (provider === 'google') {
+        const client = new GoogleGenAI({ apiKey });
+        return await generateGoogleContent(client, model, prompt, schema, systemInstruction);
+    } 
+    else if (provider === 'openai') {
+        return await generateOpenAICompatibleContent('https://api.openai.com/v1', apiKey, model, prompt, schema, systemInstruction);
+    }
+    else if (provider === 'openrouter') {
+        return await generateOpenAICompatibleContent('https://openrouter.ai/api/v1', apiKey, model, prompt, schema, systemInstruction);
+    }
+    else if (provider === 'perplexity') {
+        return await generateOpenAICompatibleContent('https://api.perplexity.ai', apiKey, model, prompt, schema, systemInstruction);
+    }
+    
+    throw new Error(`Unknown provider: ${provider}`);
+};
+
+
+// --- Fetch Available Models ---
+
+export const fetchAvailableModels = async (provider, apiKey) => {
+    if (!apiKey) throw new Error("API Key required");
+
+    if (provider === 'google') {
+        return [
+            { id: "gemini-2.5-flash", name: "Gemini 2.5 Flash" },
+            { id: "gemini-1.5-pro", name: "Gemini 1.5 Pro" },
+            { id: "gemini-1.5-flash", name: "Gemini 1.5 Flash" }
+        ];
+    }
+    
+    let url = '';
+    let headers = { 'Authorization': `Bearer ${apiKey}` };
+
+    if (provider === 'openai') url = 'https://api.openai.com/v1/models';
+    if (provider === 'openrouter') url = 'https://openrouter.ai/api/v1/models';
+    if (provider === 'perplexity') url = 'https://api.perplexity.ai/models';
+
+    try {
+        const res = await fetchWithRetry(url, { headers });
+        if (!res.ok) throw new Error("Failed to fetch models");
+        const data = await res.json();
+        
+        if (data.data) {
+             return data.data.map(m => ({ id: m.id, name: m.name || m.id }));
+        }
+        return [];
     } catch (e) {
-        console.error("Gemini TTS API error:", e);
-        throw new Error(`Failed to generate speech: ${e.message || 'Unknown API error'}`);
+        // Fallbacks on error to prevent UI crash
+        console.warn("Model fetch failed, using fallbacks:", e);
+        if (provider === 'perplexity') return [{ id: 'sonar-pro', name: 'Sonar Pro' }, { id: 'sonar', name: 'Sonar' }];
+        if (provider === 'openai') return [{ id: 'gpt-4o', name: 'GPT-4o' }, { id: 'gpt-4-turbo', name: 'GPT-4 Turbo' }, { id: 'gpt-3.5-turbo', name: 'GPT-3.5 Turbo' }];
+        throw e;
     }
 };
 
-export const generateResearchContent = async (topic, templateId, language) => {
-    if (!geminiClient) throw new Error("Gemini client not initialized.");
-    const templates = { research_proposal: { en: "...", ar: "..." } }; // Simplified for brevity
-    const systemInstruction = templates[templateId]?.[language];
-    if (!systemInstruction) throw new Error(`Invalid template or language`);
-    return await geminiClient.models.generateContentStream({
-        model: textModel,
-        contents: topic,
-        config: { systemInstruction },
-    });
+// --- Legacy / Specific Exports ---
+
+export const isAnyModelConfigured = () => !!getAdminApiKey();
+export const isModelConfigured = () => !!getAdminApiKey();
+
+export const getProvider = getAdminProvider;
+export const getApiKey = getAdminApiKey;
+export const getModelId = getAdminModelId;
+
+// --- Chat Session Helper ---
+
+export const getGeminiClient = () => {
+    const provider = getAdminProvider();
+    if (provider !== 'google') return null;
+    const apiKey = getAdminApiKey();
+    return new GoogleGenAI({ apiKey });
 };
 
-export const generatePresentationOutline = async ({ method, content, slideCount, language, amount }) => {
-    if (!geminiClient) throw new Error("Gemini client not initialized.");
-
-    const amountInstructions = {
-        minimal: "Keep content points extremely brief, ideally 1-5 words per point. Use keywords and short phrases.",
-        concise: "Keep content points concise, typically a short phrase or sentence fragment around 5-10 words.",
-        detailed: "Provide detailed bullet points, forming complete but succinct sentences, around 10-20 words each.",
-        extensive: "Provide comprehensive, multi-sentence, or even short paragraph-like bullet points, with 20+ words."
-    };
-
-    const systemInstruction = `You are an expert presentation creator. Your task is to generate a comprehensive and structured outline for a presentation. The output must be a valid JSON object. The language of the content should be ${LANGUAGES.find(l => l.code === language)?.name || 'English'}.
-${amountInstructions[amount] || amountInstructions['concise']}
-The JSON object must have a key "slides" which is an array of objects. Each slide object must contain:
-- "slideNumber" (integer)
-- "title" (string, a concise title for the slide)
-- "type" (string, can be one of: 'title_slide', 'introduction', 'agenda', 'section_header', 'content', 'summary', 'q_and_a', 'conclusion')
-- "content" (an array of strings, with each string being a bullet point for the slide)
-
-IMPORTANT: The second slide (slideNumber: 2) MUST be an 'agenda' or 'table_of_contents' slide, listing the main topics or sections that will be covered in the following slides.
-
-CRITICAL: Your entire response must be ONLY the raw JSON object. Do not add any other text, comments, or markdown formatting. All keys and string values in the JSON must be enclosed in double quotes.`;
-
-    const responseSchema = {
-        type: Type.OBJECT,
-        properties: {
-            slides: {
-                type: Type.ARRAY,
-                items: {
-                    type: Type.OBJECT,
-                    properties: {
-                        slideNumber: { type: Type.INTEGER },
-                        title: { type: Type.STRING },
-                        type: { type: Type.STRING },
-                        content: {
-                            type: Type.ARRAY,
-                            items: { type: Type.STRING }
-                        }
-                    },
-                    required: ["slideNumber", "title", "type", "content"]
-                }
-            }
-        },
-        required: ["slides"]
-    };
-
-    let prompt = `Please create a presentation outline with approximately ${slideCount} slides.\n`;
-    switch (method) {
-        case 'prompt':
-            prompt += `The presentation topic is: "${content}"`;
-            break;
-        case 'text':
-            prompt += `The presentation is based on the following text content. Summarize and structure this content into a presentation outline:\n"""\n${content}\n"""`;
-            break;
-        case 'import': // Simplified for file/URL
-            prompt += `The presentation is based on the content from the following source. Analyze, summarize, and structure it into a presentation outline:\n"""\n${content}\n"""`;
-            break;
-        default:
-            throw new Error('Invalid presentation creation method');
+// NEW: Async chat session creation that respects user settings
+export const createChatSessionAsync = async () => {
+    const config = await resolveAIConfig();
+    
+    if (config.provider === 'google' && config.apiKey) {
+        const client = new GoogleGenAI({ apiKey: config.apiKey });
+        const session = client.chats.create({ 
+            model: config.model || 'gemini-2.5-flash',
+            config: { systemInstruction: "You are an expert AI assistant." }
+        });
+        return {
+            session,
+            config,
+            isGeneric: false
+        };
     }
+    
+    return { 
+        isGeneric: true,
+        config
+    }; 
+};
 
-    const result = await geminiClient.models.generateContent({
-        model: textModel,
-        contents: prompt,
-        config: { 
-            systemInstruction, 
-            responseMimeType: 'application/json',
-            responseSchema
+// Deprecated Sync Version
+export const createChatSession = () => {
+    return { isGeneric: true }; 
+};
+
+export const sendChatMessage = async (chatContext, message, file, useWebSearch) => {
+    const { session, config, isGeneric } = chatContext;
+    
+    if (!isGeneric && session && config.provider === 'google') {
+        const messageParts = [{ text: message }];
+        if (file) {
+            const base64EncodedDataPromise = new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result.split(',')[1]);
+                reader.readAsDataURL(file);
+            });
+            messageParts.unshift({ inlineData: { data: await base64EncodedDataPromise, mimeType: file.type } });
         }
-    });
 
-    let text = result.text.trim();
-    text = text.replace(/^```json\s*/, '').replace(/\s*```\s*$/, '');
-    
-    const firstChar = text.indexOf('{');
-    const lastChar = text.lastIndexOf('}');
-    if (firstChar !== -1 && lastChar > firstChar) {
-        text = text.substring(firstChar, lastChar + 1);
+        if (useWebSearch) {
+            const client = new GoogleGenAI({ apiKey: config.apiKey });
+            const result = await client.models.generateContent({
+                model: config.model,
+                contents: { parts: messageParts },
+                config: { tools: [{ googleSearch: {} }] },
+            });
+            return { text: result.text, sources: result.candidates?.[0]?.groundingMetadata?.groundingChunks || [], isStream: false };
+        } else {
+            const stream = await session.sendMessageStream({ message: { parts: messageParts } });
+            return { stream, isStream: true };
+        }
+    } 
+    else {
+        // Generic Provider Call
+        const responseText = await generateAIContent(message, null, "You are a helpful AI assistant for project management.");
+        return { text: responseText, isStream: false, sources: [] };
     }
-    
-    return text;
 };
 
-export const generateFullPresentationContent = async (outlineJson, language, amount) => {
-    if (!geminiClient) throw new Error("Gemini client not initialized.");
-    
-    const amountInstructions = {
-        minimal: "Expand on the bullet points very briefly. Use short phrases and keywords. Paragraphs should be 1-2 sentences max.",
-        concise: "Expand on the bullet points concisely. Paragraphs should be 2-3 short sentences. Keep it direct and to the point.",
-        detailed: "Expand on the bullet points with detailed explanations. Paragraphs can be 3-5 sentences long, providing good context and information.",
-        extensive: "Expand on the bullet points comprehensively. Write detailed, multi-sentence paragraphs for each point, exploring the topic in depth."
-    };
+// ... (Audio helpers remain unchanged) ...
+function encode(bytes) {
+  let binary = '';
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
 
-    const systemInstruction = `You are an expert presentation content writer. Your task is to expand a given presentation outline into full, engaging slide content. The output must be a valid JSON object, mirroring the input structure. The language of the content must be ${LANGUAGES.find(l => l.code === language)?.name || 'English'}.
-When expanding the content, adhere to the following verbosity level: ${amountInstructions[amount] || amountInstructions['concise']}
+export function decode(base64) {
+  const binaryString = atob(base64);
+  const len = binaryString.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes;
+}
 
-For each slide object in the input, you must:
-1.  Keep the original "slideNumber", "title", and "type".
-2.  Add a new key "speakerNotes" (string) containing concise, helpful notes for the presenter for that slide.
-3.  For the "content" key, create a rich and varied array of content block objects. Each object must have a "type" key. Use a mix of types to make the slides visually interesting and easy to understand. Supported types are:
-    - 'paragraph': For a block of text. The object must also have a "text" key (string).
-    - 'bullet': For a standard bullet point. The object must also have a "text" key (string).
-    - 'table': To display structured data. The object must also have "headers" (an array of strings) and "rows" (an array of arrays of strings).
-    - 'visual_suggestion': For suggesting a visual element. The object must have a "description" key (string). Describe icons, diagrams, photos, or **charts** (e.g., "A bar chart comparing sales figures across three regions" or "A line graph showing user growth over the last year").
-    - 'infographic_point': For a key statistic or data point. Use this for impactful numbers. The object must have "title" (string), "value" (string, e.g., '75%' or '3.5x'), and "description" (string).
+export async function decodeAudioData(data, ctx, sampleRate, numChannels) {
+  const dataInt16 = new Int16Array(data.buffer);
+  const frameCount = dataInt16.length / numChannels;
+  const buffer = ctx.createBuffer(numChannels, frameCount, sampleRate);
 
-CRITICAL: Aim for a good variety of content blocks on each slide where appropriate. Don't use only paragraphs and bullets. Incorporate tables, infographic points, and visual suggestions to break up text. Your entire response must be ONLY the raw JSON object. Do not add any other text, comments, or markdown formatting. All keys and string values in the JSON must be enclosed in double quotes.`;
-
-    const prompt = `Based on the following presentation outline, please generate the full content and speaker notes for each slide. The content verbosity should be '${amount}':\n\n${outlineJson}`;
-
-    const result = await geminiClient.models.generateContent({
-        model: textModel,
-        contents: prompt,
-        config: { systemInstruction, responseMimeType: 'application/json' }
-    });
-
-    let text = result.text.trim();
-    text = text.replace(/^```json\s*/, '').replace(/\s*```\s*$/, '');
-    
-    const firstChar = text.indexOf('{');
-    const lastChar = text.lastIndexOf('}');
-    if (firstChar !== -1 && lastChar > firstChar) {
-        text = text.substring(firstChar, lastChar + 1);
+  for (let channel = 0; channel < numChannels; channel++) {
+    const channelData = buffer.getChannelData(channel);
+    for (let i = 0; i < frameCount; i++) {
+      channelData[i] = dataInt16[i * numChannels + channel] / 32768.0;
     }
+  }
+  return buffer;
+}
+
+export function createPcmBlob(data) {
+  const l = data.length;
+  const int16 = new Int16Array(l);
+  for (let i = 0; i < l; i++) {
+    int16[i] = data[i] * 32768;
+  }
+  return {
+    data: encode(new Uint8Array(int16.buffer)),
+    mimeType: 'audio/pcm;rate=16000',
+  };
+}
+
+export const startVoiceSession = async (callbacks) => {
+    const config = await resolveAIConfig();
     
-    return text;
-};
-
-
-export const analyzeData = async (fileContent, outputType) => {
-    if (!geminiClient) throw new Error("Gemini client not initialized.");
-
-    let systemInstruction = "You are a data analysis expert. Analyze the following document content and generate the requested output.";
-    let prompt = `Document Content:\n"""\n${fileContent}\n"""\n\n`;
-    let responseMimeType = undefined;
-
-    switch (outputType) {
-        case 'visualization':
-            prompt += "Analyze the data and identify important relationships or trends to visualize. Generate one or more appropriate charts (e.g., bar, line, pie) to represent these insights. If you are creating a bar chart with more than 7 categories, you MUST make it a horizontal bar chart by setting 'indexAxis': 'y' in the options. This is crucial for readability. Format the output as a valid JSON array, where each object in the array represents a single chart configuration suitable for Chart.js. Each object MUST include a 'description' (a string explaining the chart's insight), 'type', 'data' (with 'labels' and 'datasets'), and 'options' properties. Ensure 'datasets' is an array of objects, each with a 'label' and 'data' array. For pie or doughnut charts, configure the `options.plugins.tooltip.callbacks.label` to show both the label and the percentage. Choose colors that are visually appealing. CRITICAL: Your entire response must be ONLY the raw JSON array. Do not add any other text, comments, or markdown formatting. All keys and string values in the JSON must be enclosed in double quotes.";
-            responseMimeType = 'application/json';
-            break;
-        case 'infographic':
-            prompt += "Summarize the key information in the document into content for an infographic. Provide a main title, a short one-sentence summary, and 5-7 key data points. For each data point, provide a short title, a statistic or key fact, and a brief explanation. Format the output as a valid JSON object with 'title', 'summary', and 'points' (an array of objects, each with 'pointTitle', 'statistic', and 'explanation'). CRITICAL: Your entire response must be ONLY the raw JSON object. Do not add any other text, comments, or markdown formatting. All keys and string values in the JSON must be enclosed in double quotes.";
-            responseMimeType = 'application/json';
-            break;
-        case 'flowchart':
-            prompt += "Analyze the document for any processes, sequences, or workflows. Create a flowchart representing the main process identified. The output must be ONLY the valid Mermaid.js graph syntax. Do not add any other text, comments, or markdown formatting. The response must start with `graph TD;`. CRITICAL: All text inside nodes AND on links must be enclosed in double quotes. For example: A[\"Start\"] -- \"User Action\" --> B{\"Is this a valid backup?\"};";
-            break;
-        default:
-            throw new Error(`Unknown analysis output type: ${outputType}`);
+    if (config.provider !== 'google') {
+        throw new Error("Voice Chat is only available with Google Gemini provider.");
     }
-
-    const result = await geminiClient.models.generateContent({
-        model: textModel,
-        contents: prompt,
-        config: { systemInstruction, responseMimeType }
-    });
-    
-    let text = result.text.trim();
-    
-    text = text.replace(/^```(?:json|mermaid)?\s*/, '').replace(/\s*```\s*$/, '');
-    
-    if (outputType === 'visualization' || outputType === 'infographic') {
-        const startChar = outputType === 'visualization' ? '[' : '{';
-        const endChar = outputType === 'visualization' ? ']' : '}';
-        const firstChar = text.indexOf(startChar);
-        const lastChar = text.lastIndexOf(endChar);
-        if (firstChar !== -1 && lastChar > firstChar) {
-            text = text.substring(firstChar, lastChar + 1);
-        }
-    } else if (outputType === 'flowchart') {
-        const graphIndex = text.indexOf('graph');
-        if (graphIndex !== -1) {
-            text = text.substring(graphIndex);
-        }
-    }
-
-    return text;
-};
-
-// --- Infographic Video Generator Functions ---
-
-export const generateVideoScript = async (text, config, language) => {
-    if (!geminiClient) throw new Error("Gemini client not initialized.");
-    
-    const getLanguageName = (langCode) => {
-        switch(langCode) {
-            case 'ar': return 'Arabic';
-            case 'fr': return 'French';
-            case 'de': return 'German';
-            case 'en':
-            default:
-                return 'English';
-        }
-    };
-    
-    const systemInstruction = `You are an expert at creating short, engaging infographic video scripts from dense text. Analyze the provided document content and create a script based on the user's configuration. The language of the output content must be ${getLanguageName(language)}.
-
-**Instructions:**
-1. Distill the core message and key data points from the text.
-2. Structure the content into a logical narrative with an introduction, main points, and a conclusion.
-3. Based on the duration, create a script with an appropriate number of scenes (e.g., a 60-second video should have about 4-6 scenes).
-4. For each scene, provide a short, impactful title and a key takeaway sentence.
-5. For each scene, write a voiceover script. The script should be clear, concise, and engaging.
-6. For each scene, create a detailed, descriptive visual prompt suitable for an AI image generator. The prompt should describe a visually appealing infographic-style image that represents the scene's content, matching the user's selected style.
-7. The final output MUST be a valid JSON object. Do not include any text, markdown, or comments outside of the JSON structure.
-`;
-    
-    const prompt = `
-**Configuration:**
-- Video Duration: ${config.duration} seconds
-- Video Style: ${config.style}
-- Language: ${getLanguageName(language)}
-
-**Input Text:**
-"""
-${text}
-"""
-`;
-
-    const responseSchema = {
-        type: Type.OBJECT,
-        properties: {
-            scenes: {
-                type: Type.ARRAY,
-                description: "An array of scene objects for the video.",
-                items: {
-                    type: Type.OBJECT,
-                    properties: {
-                        sceneNumber: { type: Type.INTEGER, description: "The sequence number of the scene." },
-                        title: { type: Type.STRING, description: "A short, impactful title for the scene." },
-                        keyTakeaway: { type: Type.STRING, description: "A single, concise key takeaway sentence for the scene." },
-                        script: { type: Type.STRING, description: "The voiceover script for this scene." },
-                        visualPrompt: { type: Type.STRING, description: "A detailed prompt for an AI image generator to create the visual for this scene." }
-                    },
-                    required: ["sceneNumber", "title", "keyTakeaway", "script", "visualPrompt"]
-                }
-            }
-        },
-        required: ["scenes"]
-    };
-
-    const result = await geminiClient.models.generateContent({
-        model: advancedTextModel,
-        contents: prompt,
-        config: { 
-            systemInstruction,
-            responseMimeType: 'application/json',
-            responseSchema
-        }
-    });
-
-    let jsonText = result.text.trim().replace(/^```json\s*/, '').replace(/\s*```\s*$/, '');
-    return jsonText;
-};
-
-export const generateInfographicImage = async (visualPrompt, style) => {
-    if (!isModelConfigured('gemini')) throw new Error("Gemini client not initialized.");
-
-    const fullPrompt = `A visually appealing infographic-style image. Style: ${style}. Clean, modern aesthetic with vibrant accent colors. The image should be a high-quality, professional graphic representing the following concept: "${visualPrompt}"`;
-
-    const response = await geminiClient.models.generateContent({
-        model: imageModel,
-        contents: { parts: [{ text: fullPrompt }] },
+    const client = new GoogleGenAI({ apiKey: config.apiKey });
+    const sessionPromise = client.live.connect({
+        model: 'gemini-2.5-flash-native-audio-preview-09-2025',
+        callbacks: callbacks,
         config: {
-            responseModalities: [Modality.IMAGE],
+            responseModalities: [Modality.AUDIO],
+            speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } } },
         },
     });
-
-    for (const part of response.candidates[0].content.parts) {
-        if (part.inlineData) {
-            return part.inlineData.data; // This is the base64 encoded string
-        }
-    }
-    throw new Error("No image data received from API.");
+    return sessionPromise;
 };
