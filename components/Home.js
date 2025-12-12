@@ -7,13 +7,11 @@ import * as settingsService from '../services/settingsService.js';
 const Home = ({ language, onNavigateToServices }) => {
     const t = i18n[language];
     const [disabledServices, setDisabledServices] = useState(settingsService.getSettings().disabledServices);
-    const [teamMembers, setTeamMembers] = useState(settingsService.getSettings().teamMembers);
 
     useEffect(() => {
         const handleSettingsChange = () => {
             const settings = settingsService.getSettings();
             setDisabledServices(settings.disabledServices);
-            setTeamMembers(settings.teamMembers);
         };
         window.addEventListener('settingsChanged', handleSettingsChange);
         return () => window.removeEventListener('settingsChanged', handleSettingsChange);
@@ -170,24 +168,37 @@ const Home = ({ language, onNavigateToServices }) => {
     };
 
     const TeamSection = () => {
-         if (!teamMembers || teamMembers.length === 0) return null;
-
          return React.createElement('section', { className: 'bg-slate-50/80 dark:bg-white/5 backdrop-blur-sm py-20 border-y border-slate-200/50 dark:border-white/5' },
             React.createElement('div', { className: 'container mx-auto px-6' },
                 React.createElement('div', { className: 'text-center max-w-3xl mx-auto mb-12' },
                     React.createElement('h2', { className: 'text-3xl md:text-4xl font-bold text-slate-900 dark:text-white' }, 
-                        language === 'ar' ? 'تعرف على فريقنا الإبداعي' : 'Meet Our Great Creative Teams'
+                        language === 'ar' ? 'تعرف على المطور' : 'Meet the Creator'
                     ),
                     React.createElement('p', { className: 'mt-4 text-slate-500 dark:text-light-gray' },
-                        language === 'ar' ? 'فريقنا المتخصص من الخبراء جاهز لمساعدتك في تحقيق أقصى استفادة من الذكاء الاصطناعي.' : 'Our dedicated team of experts is ready to help you leverage the full potential of AI.'
+                        language === 'ar' ? 'العقل المدبر وراء عبقري العلوم.' : 'The mind behind SciGenius.'
                     )
                 ),
-                React.createElement('div', { className: 'grid md:grid-cols-3 gap-8' },
-                    teamMembers.map((member, index) => 
-                        React.createElement('div', { key: index, className: 'text-center bg-white/60 dark:bg-dark-bg/60 backdrop-blur-md border border-slate-100 dark:border-white/10 p-6 rounded-2xl shadow-lg' },
-                            React.createElement('img', { src: member.img, alt: member.name, className: 'w-32 h-32 rounded-full mx-auto mb-4 border-4 border-brand-red shadow-md object-cover' }),
-                            React.createElement('h3', { className: 'text-xl font-bold text-slate-900 dark:text-white' }, member.name),
-                            React.createElement('p', { className: 'text-slate-500 dark:text-light-gray' }, member.role)
+                React.createElement('div', { className: 'max-w-4xl mx-auto bg-white/60 dark:bg-dark-bg/60 backdrop-blur-md border border-slate-100 dark:border-white/10 p-8 rounded-3xl shadow-xl flex flex-col md:flex-row items-center gap-8' },
+                    React.createElement('div', { className: 'flex-shrink-0' },
+                        React.createElement('div', { className: 'relative w-48 h-48 rounded-full overflow-hidden border-4 border-brand-red shadow-lg' },
+                            React.createElement('img', { 
+                                src: 'https://i.imgur.com/NmdyAV9.jpeg', 
+                                alt: 'Mohamed Naguib', 
+                                className: 'w-full h-full object-cover' 
+                            })
+                        )
+                    ),
+                    React.createElement('div', { className: `text-center ${language === 'ar' ? 'md:text-right' : 'md:text-left'} flex-grow` },
+                        React.createElement('h3', { className: 'text-2xl font-bold text-slate-900 dark:text-white mb-2' }, 'Mohamed Naguib'),
+                        React.createElement('div', { className: 'flex flex-wrap justify-center md:justify-start gap-2 mb-4' },
+                            ['AI Lead', 'UI/UX Design', 'App Development'].map((role, i) => 
+                                React.createElement('span', { key: i, className: 'px-3 py-1 bg-brand-blue/10 text-brand-blue dark:text-blue-300 rounded-full text-xs font-semibold' }, role)
+                            )
+                        ),
+                        React.createElement('p', { className: 'text-slate-600 dark:text-light-gray leading-relaxed' }, 
+                            language === 'ar' 
+                                ? 'مطور ومصمم شغوف يتمتع بخبرة عميقة في قيادة مشاريع الذكاء الاصطناعي، وتصميم تجارب مستخدم بديهية، وتطوير تطبيقات متكاملة. يهدف إلى دمج التكنولوجيا المتقدمة مع التصميم الأنيق لتمكين المستخدمين.'
+                                : 'A passionate developer and designer with deep expertise in leading AI initiatives, crafting intuitive UI/UX, and full-stack application development. Dedicated to merging advanced technology with elegant design to empower users.'
                         )
                     )
                 )

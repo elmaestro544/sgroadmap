@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 export const Spinner = ({ size = '8' }) => (
@@ -171,23 +170,11 @@ export const StarIcon = ({ className = "h-12 w-12 text-yellow-400" }) => (
 );
 
 export const Logo = () => (
-    React.createElement('svg', {
-        viewBox: "0 0 200 200",
-        className: "h-10 w-auto",
-        "aria-label": "SciGenius Logo",
-        role: "img"
-    },
-        React.createElement('title', null, "SciGenius Logo"),
-        // The rings and ocean background
-        React.createElement('circle', { cx: "100", cy: "100", r: "100", fill: "#00205B" }),
-        React.createElement('circle', { cx: "100", cy: "100", r: "90", className: "fill-white dark:fill-white" }),
-        React.createElement('circle', { cx: "100", cy: "100", r: "85", fill: "#00205B" }),
-        // The continents
-        React.createElement('path', {
-            fill: "#ef4444",
-            d: "M 86 33 C 86 33 83 36 84 39 C 85 42 84 45 84 45 C 84 45 89 48 93 46 C 97 44 95 40 95 40 L 91 35 L 86 33 Z M 80 47 C 80 47 72 50 72 56 C 72 62 76 68 81 72 C 86 76 89 83 89 83 L 90 92 C 90 92 90 98 86 100 C 82 102 81 106 82 109 C 83 112 87 114 87 114 L 92 119 C 92 119 96 114 96 109 C 96 104 94 102 94 102 C 94 102 96 95 96 91 C 96 87 93 78 93 78 C 93 78 95 72 95 68 C 95 64 92 57 89 53 C 86 49 80 47 80 47 Z M 89 123 C 89 123 88 127 90 131 C 92 135 90 142 90 142 L 91 150 C 91 150 90 156 94 158 C 98 160 100 157 100 157 L 102 147 C 102 147 104 140 101 135 C 98 130 96 126 96 126 L 89 123 Z M 131 43 C 131 43 126 44 123 48 C 120 52 119 58 121 63 C 123 68 125 71 125 71 L 128 78 C 128 78 134 81 134 76 C 134 71 131 69 131 69 C 131 69 133 63 131 60 C 129 57 128 54 128 54 L 131 49 L 131 43 Z M 115 76 C 115 76 112 78 112 84 C 112 90 110 93 110 93 L 108 101 C 108 101 107 111 112 115 C 117 119 120 120 120 120 C 120 120 124 120 128 116 C 132 112 133 107 131 102 C 129 97 126 95 126 95 C 126 95 129 88 127 84 C 125 80 121 77 121 77 L 115 76 Z M 67 71 L 64 76 L 67 80 L 65 85 L 69 88 L 71 84 L 67 79 Z M 71 94 L 68 98 L 72 102 L 70 106 L 73 109 L 76 105 L 71 99 Z M 106 50 L 102 54 L 106 58 L 104 63 L 108 66 L 111 62 L 106 55 Z M 135 91 L 132 95 L 136 99 L 134 103 L 137 106 L 140 102 L 135 96 Z"
-        })
-    )
+    React.createElement('img', {
+        src: "https://i.imgur.com/3urddbC.jpeg",
+        alt: "SciGenius Logo",
+        className: "h-10 w-auto rounded-lg"
+    })
 );
 
 export const ArrowLeftIcon = ({ className = "" }) => (
@@ -363,7 +350,7 @@ export const FocusIcon = ({ className = "w-5 h-5" }) => React.createElement('svg
 );
 
 export const ErrorIcon = ({ className = "h-5 w-5" }) => (
-    React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
+    React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className, fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 },
         React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" })
     )
 );
